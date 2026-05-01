@@ -1,0 +1,242 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { fetchDeliveryById, fetchStockMoves, validateDelivery } from "@/lib/odoo/stock";
+import { odooCall } from "@/lib/odoo/client";
+import { formatDate, formatDateTime } from "@/lib/utils";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { WorkflowBar } from "@/components/layout/WorkflowBar";
+import type { StockPicking, StockMove, SaleOrder } from "@/types/odoo";
+import type { DocumentType } from "@/types/documents";
+import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
+
+export default function DeliveryDetailPage() {
+  const params = useParams();
+  const id = Number(params.id);
+
+  const [picking, setPicking] = useState<StockPicking | null>(null);
+  const [moves, setMoves] = useState<StockMove[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [validating, setValidating] = useState(false);
+  const [originSoId, setOriginSoId] = useState<number | null>(null);
+
+  const canValidate =
+    picking?.state === "assigned" ||
+    picking?.state === "confirmed";
+
+  const loadPicking = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [p, m] = await Promise.all([
+        fetchDeliveryById(id),
+        fetchStockMoves(id),
+      ]);
+      setPicking(p);
+      setMoves(m);
+
+      if (p.origin) {
+        try {
+          const sos = await odooCall<SaleOrder[]>("sale.order", "search_read", [[["name", "=", p.origin]]], {
+            fields: ["id"],
+            limit: 1,
+          });
+          if (sos.length) setOriginSoId(sos[0].id);
+        } catch {}
+      }
+    } catch (err) {
+      console.error("Failed to load delivery:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadPicking();
+  }, [loadPicking]);
+
+  async function handleValidate() {
+    if (!confirm("Validate this delivery? This will mark it as done.")) return;
+    setValidating(true);
+    try {
+      await validateDelivery(id);
+      await loadPicking();
+    } catch (err) {
+      alert(`Failed to validate: ${(err as Error).message}`);
+    } finally {
+      setValidating(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!picking) {
+    return (
+      <div className="py-12 text-center text-[var(--color-text-muted)]">
+        Delivery not found
+      </div>
+    );
+  }
+
+  const completedSteps: DocumentType[] = ["quotation", "proforma", "purchase_order", "invoice"];
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/delivery" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
+              {picking.name}
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge state={picking.state} />
+              {picking.origin && (
+                <span className="text-xs text-[var(--color-text-muted)]">
+                  from {picking.origin}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {canValidate && (
+            <Button onClick={handleValidate} disabled={validating}>
+              <CheckCircle size={16} />
+              {validating ? "Validating..." : "Validate"}
+            </Button>
+          )}
+          <Link href={`/api/pdf/delivery/${id}`} target="_blank">
+            <Button variant="outline">
+              <Printer size={16} />
+              Print PDF
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <WorkflowBar currentType="delivery" completed={completedSteps} />
+
+      {(picking.origin || originSoId) && (
+        <Card>
+          <h3 className="mb-3 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+            Related Documents
+          </h3>
+          <div className="flex gap-3 flex-wrap">
+            {originSoId && (
+              <Link href={`/quotations/${originSoId}`}>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
+                  <ExternalLink size={14} />
+                  Order {picking.origin}
+                </span>
+              </Link>
+            )}
+            {originSoId && (
+              <Link href={`/proforma/${originSoId}`}>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
+                  <ExternalLink size={14} />
+                  Proforma PRO-{picking.origin}
+                </span>
+              </Link>
+            )}
+          </div>
+        </Card>
+      )}
+
+      <Card>
+        <div className="grid grid-cols-2 gap-6 p-6">
+          <div>
+            <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
+              Customer
+            </p>
+            <p className="text-base font-semibold text-[var(--color-text)]">{picking.partner_id[1]}</p>
+          </div>
+          <div className="space-y-1 text-right">
+            <div>
+              <span className="text-xs text-[var(--color-text-muted)]">Scheduled: </span>
+              <span className="text-sm font-medium text-[var(--color-text)]">
+                {formatDateTime(picking.scheduled_date)}
+              </span>
+            </div>
+            {picking.date_done && (
+              <div>
+                <span className="text-xs text-[var(--color-text-muted)]">Completed: </span>
+                <span className="text-sm font-medium text-[var(--color-text)]">
+                  {formatDateTime(picking.date_done)}
+                </span>
+              </div>
+            )}
+            {picking.picking_type_id && (
+              <div>
+                <span className="text-xs text-[var(--color-text-muted)]">Type: </span>
+                <span className="text-sm font-medium text-[var(--color-text)]">
+                  {picking.picking_type_id[1]}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      <div className="overflow-x-auto rounded-xl border border-[var(--color-border)] bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-[var(--color-primary)] text-white">
+              <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-8">
+                #
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider">
+                Product
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-24">
+                Demand
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-24">
+                Done
+              </th>
+              <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-24">
+                UoM
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {moves.map((move, idx) => (
+              <tr
+                key={move.id}
+                className={`border-b border-[var(--color-border-light)] ${idx % 2 === 1 ? "bg-[var(--color-row-alt)]" : ""}`}
+              >
+                <td className="px-4 py-3 text-[var(--color-text-muted)]">{idx + 1}</td>
+                <td className="px-4 py-3 text-[var(--color-text)]">
+                  {move.product_id?.[1] || move.name}
+                </td>
+                <td className="px-4 py-3 text-right font-medium">{move.product_uom_qty}</td>
+                <td className="px-4 py-3 text-right font-medium">{move.quantity_done}</td>
+                <td className="px-4 py-3 text-right text-[var(--color-text-muted)]">
+                  {move.product_uom?.[1] || "-"}
+                </td>
+              </tr>
+            ))}
+            {moves.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
+                  No stock moves
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

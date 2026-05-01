@@ -1,0 +1,249 @@
+import { Font, StyleSheet } from "@react-pdf/renderer";
+
+Font.register({
+  family: "Sora",
+  fonts: [
+    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQspDre2b2viVk8.woff2", fontWeight: 400 },
+    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQUpDg2b2viVk8w.woff2", fontWeight: 600 },
+    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQspDre-N2viVk8.woff2", fontWeight: 700 },
+  ],
+});
+
+Font.register({
+  family: "DM Sans",
+  fonts: [
+    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriOZQ.woff2", fontWeight: 400 },
+    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Cp2ywxg089URIASLdn.woff2", fontWeight: 500 },
+    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Ap2ywxg089URI5Lan4-f4a2E.woff2", fontWeight: 700 },
+  ],
+});
+
+export const PDF_COLORS = {
+  primary: "#0F7B7B",
+  primaryDark: "#0A5C5C",
+  primaryLight: "#E8F4F4",
+  accent: "#D4A017",
+  text: "#1C1C1E",
+  textMuted: "#6B7280",
+  white: "#FFFFFF",
+  rowAlt: "#F5F9F9",
+  border: "#E5E7EB",
+  totalsBg: "#E8F4F4",
+};
+
+export const pdfStyles = StyleSheet.create({
+  page: {
+    padding: 0,
+    fontSize: 9,
+    fontFamily: "DM Sans",
+    color: PDF_COLORS.text,
+  },
+  header: {
+    backgroundColor: PDF_COLORS.primary,
+    padding: 20,
+    color: PDF_COLORS.white,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerLeft: {
+    flexDirection: "column",
+    gap: 4,
+  },
+  companyName: {
+    fontSize: 16,
+    fontFamily: "Sora",
+    fontWeight: 700,
+    color: PDF_COLORS.white,
+  },
+  companyInfo: {
+    fontSize: 8,
+    color: "rgba(255,255,255,0.85)",
+    flexDirection: "column",
+    gap: 2,
+  },
+  docTypeBadge: {
+    backgroundColor: PDF_COLORS.accent,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+  },
+  docTypeLabel: {
+    fontSize: 11,
+    fontFamily: "Sora",
+    fontWeight: 700,
+    color: PDF_COLORS.white,
+  },
+  infoSection: {
+    flexDirection: "row",
+    padding: 16,
+    gap: 1,
+    borderBottomWidth: 1,
+    borderColor: PDF_COLORS.border,
+  },
+  infoCol: {
+    flex: 1,
+    flexDirection: "column",
+    gap: 4,
+  },
+  infoLabel: {
+    fontSize: 7,
+    fontFamily: "Sora",
+    fontWeight: 600,
+    color: PDF_COLORS.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  infoValue: {
+    fontSize: 10,
+    fontFamily: "Sora",
+    fontWeight: 600,
+    color: PDF_COLORS.text,
+  },
+  infoSubValue: {
+    fontSize: 9,
+    color: PDF_COLORS.textMuted,
+  },
+  shippingBar: {
+    flexDirection: "row",
+    padding: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "#F9FAFB",
+    borderBottomWidth: 1,
+    borderColor: PDF_COLORS.border,
+    gap: 24,
+  },
+  shippingItem: {
+    flexDirection: "column",
+    gap: 2,
+  },
+  table: {
+    margin: 0,
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: PDF_COLORS.primary,
+    color: PDF_COLORS.white,
+    fontFamily: "Sora",
+    fontWeight: 600,
+    fontSize: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  tableHeaderCell: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#F3F4F6",
+    paddingVertical: 6,
+  },
+  tableRowAlt: {
+    backgroundColor: PDF_COLORS.rowAlt,
+  },
+  tableCell: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontSize: 9,
+  },
+  colDesc: { width: "40%" },
+  colActivity: { width: "15%" },
+  colDate: { width: "12%" },
+  colQty: { width: "8%", textAlign: "right" },
+  colPrice: { width: "13%", textAlign: "right" },
+  colAmount: { width: "12%", textAlign: "right", fontFamily: "Sora", fontWeight: 600 },
+  colNum: { width: "5%", textAlign: "center", color: PDF_COLORS.textMuted },
+  totalsSection: {
+    flexDirection: "column",
+    borderTopWidth: 2,
+    borderColor: PDF_COLORS.primary,
+  },
+  totalsRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+  },
+  totalsLabel: {
+    width: "40%",
+    textAlign: "right",
+    fontSize: 9,
+    color: PDF_COLORS.textMuted,
+    paddingRight: 16,
+  },
+  totalsValue: {
+    width: "25%",
+    textAlign: "right",
+    fontSize: 9,
+    fontFamily: "Sora",
+    fontWeight: 600,
+  },
+  totalsTotalRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    backgroundColor: PDF_COLORS.totalsBg,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  totalsTotalLabel: {
+    width: "40%",
+    textAlign: "right",
+    fontSize: 11,
+    fontFamily: "Sora",
+    fontWeight: 700,
+    color: PDF_COLORS.primary,
+    paddingRight: 16,
+  },
+  totalsTotalValue: {
+    width: "25%",
+    textAlign: "right",
+    fontSize: 11,
+    fontFamily: "Sora",
+    fontWeight: 700,
+    color: PDF_COLORS.primary,
+  },
+  bankSection: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderColor: PDF_COLORS.border,
+    backgroundColor: "#FAFAFA",
+  },
+  bankTitle: {
+    fontSize: 7,
+    fontFamily: "Sora",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: PDF_COLORS.textMuted,
+    marginBottom: 8,
+  },
+  bankGrid: {
+    flexDirection: "row",
+    gap: 32,
+    fontSize: 8,
+  },
+  bankCol: {
+    flexDirection: "column",
+    gap: 3,
+  },
+  bankLabel: {
+    color: PDF_COLORS.textMuted,
+  },
+  bankValue: {
+    fontFamily: "Sora",
+    fontWeight: 600,
+    color: PDF_COLORS.text,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    fontSize: 7,
+    color: PDF_COLORS.textMuted,
+  },
+});
