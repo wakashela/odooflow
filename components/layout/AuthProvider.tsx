@@ -2,32 +2,46 @@
 
 import { useAuthStore } from "@/store/authStore";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { checkSession } from "@/lib/odoo/auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { session, setSession, setLoading, reset } = useAuthStore();
+  const { setSession, reset } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    setMounted(true);
     const isLoginPage = pathname === "/login";
 
-    checkSession().then((s) => {
-      if (s && s.uid) {
-        setSession(s);
-        if (isLoginPage) router.replace("/");
-      } else {
+    checkSession()
+      .then((s) => {
+        if (s && s.uid) {
+          setSession(s);
+          if (isLoginPage) router.replace("/");
+        } else {
+          reset();
+          if (!isLoginPage) router.replace("/login");
+        }
+      })
+      .catch(() => {
         reset();
         if (!isLoginPage) router.replace("/login");
-      }
-    }).catch(() => {
-      reset();
-      if (!isLoginPage) router.replace("/login");
-    });
-  }, []);
+      })
+      .finally(() => {
+        setChecking(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (useAuthStore.getState().loading && pathname !== "/login") {
+  // Before mount, render children to match server output (avoids hydration mismatch)
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  // After mount, show loading spinner while checking session (except on login page)
+  if (checking && pathname !== "/login") {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
         <div className="flex flex-col items-center gap-3">
