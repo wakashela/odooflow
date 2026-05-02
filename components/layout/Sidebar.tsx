@@ -37,9 +37,7 @@ export function Sidebar() {
       )}
     >
       <div className="flex h-16 items-center gap-3 border-b border-[var(--color-border)] px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-primary)] text-white font-bold text-sm font-[family-name:var(--font-heading)]">
-          JI
-        </div>
+        <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
         {!collapsed && (
           <div className="flex flex-col">
             <span className="text-sm font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
