@@ -14,12 +14,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const { context: rpcContext, ...restBody } = body;
   const rpcPayload = {
     jsonrpc: "2.0",
     method: "call",
     id: Date.now(),
     params: {
-      ...body,
+      ...restBody,
+      ...(rpcContext ? { context: rpcContext } : {}),
       db: ODOO_DB,
     },
   };

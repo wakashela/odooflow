@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -23,6 +23,7 @@ export default function ProformaDetailPage() {
 
   const [order, setOrder] = useState<SaleOrder | null>(null);
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
+  const [purchaseOrderIds, setPurchaseOrderIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadOrder = useCallback(async () => {
@@ -32,8 +33,10 @@ export default function ProformaDetailPage() {
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
       ]);
+      const purchaseOrders = await fetchPurchaseOrdersByOrigin(so.name);
       setOrder(so);
       setRawLines(lines);
+      setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
     } catch (err) {
       console.error("Failed to load proforma:", err);
     } finally {
@@ -76,9 +79,14 @@ export default function ProformaDetailPage() {
   const computedTax = computedSubtotal * 0.18;
   const computedTotal = computedSubtotal + computedTax;
 
-  const completedSteps: DocumentType[] = ["quotation"];
   const hasInvoices = (order.invoice_ids?.length ?? 0) > 0;
   const hasPickings = (order.picking_ids?.length ?? 0) > 0;
+  const hasPurchaseOrders = purchaseOrderIds.length > 0;
+  const completedSteps: DocumentType[] = ["quotation",
+    ...(hasPurchaseOrders ? ["purchase_order" as DocumentType] : []),
+    ...(hasInvoices ? ["invoice" as DocumentType] : []),
+    ...(hasPickings ? ["delivery" as DocumentType] : []),
+  ];
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -119,11 +127,19 @@ export default function ProformaDetailPage() {
               Quotation {order.name}
             </span>
           </Link>
+          {hasPurchaseOrders && purchaseOrderIds.map((poId) => (
+            <Link key={poId} href={`/purchase-orders/${poId}`}>
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors">
+                <ExternalLink size={14} />
+                Purchase Order #{poId}
+              </span>
+            </Link>
+          ))}
           {hasInvoices && order.invoice_ids!.map((invId) => (
             <Link key={invId} href={`/invoices/${invId}`}>
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-light)] transition-colors">
                 <ExternalLink size={14} />
-                Invoice #{invId}
+                Tax Invoice #{invId}
               </span>
             </Link>
           ))}
@@ -131,7 +147,7 @@ export default function ProformaDetailPage() {
             <Link key={pickId} href={`/delivery/${pickId}`}>
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors">
                 <ExternalLink size={14} />
-                Delivery #{pickId}
+                Delivery Note #{pickId}
               </span>
             </Link>
           ))}

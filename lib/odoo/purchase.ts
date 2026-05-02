@@ -1,5 +1,6 @@
 import { odooCall } from "./client";
 import type { PurchaseOrder, PurchaseOrderLine } from "@/types/odoo";
+import { fetchQuotationById, fetchSaleOrderLines } from "./sale";
 
 const PO_FIELDS = [
   "id", "name", "state", "partner_id", "date_order",
@@ -39,4 +40,41 @@ export async function fetchPurchaseOrderLines(orderId: number): Promise<Purchase
 
 export async function confirmPurchaseOrder(id: number): Promise<boolean> {
   return odooCall<boolean>("purchase.order", "button_confirm", [[id]]);
+}
+
+export async function fetchPurchaseOrdersByOrigin(origin: string): Promise<PurchaseOrder[]> {
+  return odooCall<PurchaseOrder[]>("purchase.order", "search_read", [[["origin", "=", origin]]], {
+    fields: PO_FIELDS,
+    order: "id desc",
+  });
+}
+
+export async function createPurchaseOrderFromSaleOrder(saleOrderId: number): Promise<number> {
+  const [saleOrder, saleLines] = await Promise.all([
+    fetchQuotationById(saleOrderId),
+    fetchSaleOrderLines(saleOrderId),
+  ]);
+
+  if (!saleOrder.partner_id?.[0]) {
+    throw new Error("Sale order partner is required to create a purchase order");
+  }
+
+  const purchaseOrderId = await odooCall<number>("purchase.order", "create", [{
+    partner_id: saleOrder.partner_id[0],
+    origin: saleOrder.name,
+  }]);
+
+  for (const line of saleLines) {
+    if (!line.product_id?.[0]) continue;
+
+    await odooCall<number>("purchase.order.line", "create", [{
+      order_id: purchaseOrderId,
+      product_id: line.product_id[0],
+      name: line.name,
+      product_qty: line.product_uom_qty,
+      price_unit: line.price_unit,
+    }]);
+  }
+
+  return purchaseOrderId;
 }

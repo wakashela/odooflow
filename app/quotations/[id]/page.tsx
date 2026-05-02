@@ -5,8 +5,9 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOrderLine, deleteSaleOrderLine, addSaleOrderLine } from "@/lib/odoo/sale";
 import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
+import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { fetchProducts } from "@/lib/odoo/partner";
-import { formatCurrency, formatDate, computeLineAmount } from "@/lib/utils";
+import { computeLineAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -18,7 +19,7 @@ import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { SaleOrder, SaleOrderLine } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
 import type { ProductProduct } from "@/types/odoo";
-import { ArrowLeft, CheckCircle, Printer, FileText, ExternalLink } from "lucide-react";
+import { ArrowLeft, CheckCircle, Printer, FileText, ExternalLink, ShoppingCart } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 
@@ -29,10 +30,12 @@ export default function QuotationDetailPage() {
 
   const [order, setOrder] = useState<SaleOrder | null>(null);
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
+  const [purchaseOrderIds, setPurchaseOrderIds] = useState<number[]>([]);
   const [products, setProducts] = useState<ProductProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [creatingInvoice, setCreatingInvoice] = useState(false);
+  const [creatingPurchaseOrder, setCreatingPurchaseOrder] = useState(false);
   const [showAddLine, setShowAddLine] = useState(false);
   const [newProduct, setNewProduct] = useState(0);
   const [newQty, setNewQty] = useState(1);
@@ -47,8 +50,10 @@ export default function QuotationDetailPage() {
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
       ]);
+      const purchaseOrders = await fetchPurchaseOrdersByOrigin(so.name);
       setOrder(so);
       setRawLines(lines);
+      setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
     } catch (err) {
       console.error("Failed to load quotation:", err);
     } finally {
@@ -73,7 +78,7 @@ export default function QuotationDetailPage() {
   }));
 
   async function handleConfirm() {
-    if (!confirm("Confirm this quotation? This will lock the line items.")) return;
+    if (!confirm("Confirm this quotation?\n\nThis action will lock line items and move the workflow to proforma so purchase order processing can begin.")) return;
     setConfirming(true);
     try {
       await confirmQuotation(id);
@@ -99,6 +104,20 @@ export default function QuotationDetailPage() {
       alert(`Failed to create invoice: ${(err as Error).message}`);
     } finally {
       setCreatingInvoice(false);
+    }
+  }
+
+  async function handleCreatePurchaseOrder() {
+    if (!confirm("Create a purchase order from this confirmed order?")) return;
+    setCreatingPurchaseOrder(true);
+    try {
+      const purchaseOrderId = await createPurchaseOrderFromSaleOrder(id);
+      await loadOrder();
+      router.push(`/purchase-orders/${purchaseOrderId}`);
+    } catch (err) {
+      alert(`Failed to create purchase order: ${(err as Error).message}`);
+    } finally {
+      setCreatingPurchaseOrder(false);
     }
   }
 
@@ -183,10 +202,16 @@ export default function QuotationDetailPage() {
   const computedTax = computedSubtotal * 0.18;
   const computedTotal = computedSubtotal + computedTax;
 
-  const completedSteps: DocumentType[] = order.state === "sale" ? ["quotation"] : [];
-
   const hasInvoices = (order.invoice_ids?.length ?? 0) > 0;
   const hasPickings = (order.picking_ids?.length ?? 0) > 0;
+  const hasPurchaseOrders = purchaseOrderIds.length > 0;
+  const completedSteps: DocumentType[] = !isConfirmed
+    ? []
+    : ["quotation", "proforma",
+      ...(hasPurchaseOrders ? ["purchase_order" as DocumentType] : []),
+      ...(hasInvoices ? ["invoice" as DocumentType] : []),
+      ...(hasPickings ? ["delivery" as DocumentType] : []),
+    ];
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -211,10 +236,16 @@ export default function QuotationDetailPage() {
               {confirming ? "Confirming..." : "Confirm Order"}
             </Button>
           )}
-          {isConfirmed && !hasInvoices && (
+          {isConfirmed && !hasPurchaseOrders && (
+            <Button onClick={handleCreatePurchaseOrder} disabled={creatingPurchaseOrder}>
+              <ShoppingCart size={16} />
+              {creatingPurchaseOrder ? "Creating..." : "Create Purchase Order"}
+            </Button>
+          )}
+          {isConfirmed && hasPurchaseOrders && !hasInvoices && (
             <Button onClick={handleCreateInvoice} disabled={creatingInvoice}>
               <FileText size={16} />
-              {creatingInvoice ? "Creating..." : "Create Invoice"}
+              {creatingInvoice ? "Creating..." : "Create Tax Invoice"}
             </Button>
           )}
           <Link href={`/api/pdf/quotation/${id}`} target="_blank">
@@ -228,7 +259,7 @@ export default function QuotationDetailPage() {
 
       <WorkflowBar currentType="quotation" completed={completedSteps} />
 
-      {(isConfirmed || hasInvoices || hasPickings) && (
+      {(isConfirmed || hasInvoices || hasPickings || hasPurchaseOrders) && (
         <Card>
           <h3 className="mb-3 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Related Documents
@@ -242,11 +273,19 @@ export default function QuotationDetailPage() {
                 </span>
               </Link>
             )}
+            {hasPurchaseOrders && purchaseOrderIds.map((poId) => (
+              <Link key={poId} href={`/purchase-orders/${poId}`}>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-orange-600 hover:bg-orange-50 transition-colors">
+                  <ExternalLink size={14} />
+                  Purchase Order #{poId}
+                </span>
+              </Link>
+            ))}
             {hasInvoices && order.invoice_ids!.map((invId) => (
               <Link key={invId} href={`/invoices/${invId}`}>
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-accent)] hover:bg-[var(--color-accent-light)] transition-colors">
                   <ExternalLink size={14} />
-                  Invoice #{invId}
+                  Tax Invoice #{invId}
                 </span>
               </Link>
             ))}
@@ -254,7 +293,7 @@ export default function QuotationDetailPage() {
               <Link key={pickId} href={`/delivery/${pickId}`}>
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors">
                   <ExternalLink size={14} />
-                  Delivery #{pickId}
+                  Delivery Note #{pickId}
                 </span>
               </Link>
             ))}

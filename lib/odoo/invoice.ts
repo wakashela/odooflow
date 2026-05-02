@@ -45,8 +45,12 @@ export async function postInvoice(id: number): Promise<boolean> {
 export async function createInvoicesFromSaleOrder(orderId: number): Promise<number[]> {
   const wizId = await odooCall<number>("sale.advance.payment.inv", "create", [{
     advance_payment_method: "delivered",
-  }]);
-  await odooCall<boolean>("sale.advance.payment.inv", "create_invoices", [[wizId]], {
+    sale_order_ids: [[6, 0, [orderId]]],
+  }], {}, {
+    active_ids: [orderId],
+    active_model: "sale.order",
+  });
+  await odooCall<unknown>("sale.advance.payment.inv", "create_invoices", [[wizId]], {}, {
     active_ids: [orderId],
     active_model: "sale.order",
   });

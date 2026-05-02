@@ -23,12 +23,13 @@ export async function odooCall<T>(
   model: string,
   method: string,
   args: unknown[] = [],
-  kwargs: Record<string, unknown> = {}
+  kwargs: Record<string, unknown> = {},
+  context?: Record<string, unknown>
 ): Promise<T> {
   const res = await fetch("/api/odoo", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ model, method, args, kwargs }),
+    body: JSON.stringify({ model, method, args, kwargs, context }),
   });
 
   const data: OdooCallResult<T> = await res.json();

@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OdooFlow
 
-## Getting Started
+OdooFlow is a specialized Next.js application designed to streamline Odoo operations, focusing on document management, PDF generation, and automated workflows.
 
-First, run the development server:
+## Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Document Management**: View and manage Quotations, Invoices, Purchase Orders, and Delivery Notes integrated directly with Odoo.
+- **PDF Generation**: Dynamically generate professional, branded PDF documents for all major sales and purchasing workflows.
+- **Workflow Automation**: Simplified status tracking and document lifecycle management.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript
+- **State Management**: Zustand
+- **PDF Engine**: `@react-pdf/renderer`
+- **Data Fetching**: Custom Odoo JSON-RPC client
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development Setup
 
-## Learn More
+1. **Clone the repository**
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Environment Variables**: Create a `.env.local` file with your Odoo connection details:
+   ```env
+   ODOO_URL=your_odoo_instance_url
+   ODOO_DB=your_database_name
+   ODOO_USER=your_username
+   ODOO_PASSWORD=your_api_key
+   ```
+4. **Run development server**:
+   ```bash
+   npm run dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Reusable UI and document-specific components.
+- `lib/`: Core logic including Odoo API clients and PDF generators.
+- `store/`: Zustand state stores for authentication and document data.
+- `types/`: TypeScript definitions for Odoo models and domain documents.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is proprietary and confidential.
