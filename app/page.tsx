@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { odooCall } from "@/lib/odoo/client";
@@ -20,6 +21,7 @@ interface KpiCard {
 }
 
 export default function DashboardPage() {
+  const { session } = useAuthStore();
   const [kpis, setKpis] = useState<KpiCard[]>([]);
   const [recentOrders, setRecentOrders] = useState<SaleOrder[]>([]);
   const [recentInvoices, setRecentInvoices] = useState<AccountMove[]>([]);
@@ -28,6 +30,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!session) return;
+
     async function load() {
       try {
         const [orders, invoices, purchases, deliveries] = await Promise.all([

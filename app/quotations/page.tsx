@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchQuotations } from "@/lib/odoo/sale";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -11,14 +12,17 @@ import type { SaleOrder } from "@/types/odoo";
 import { Plus, Search } from "lucide-react";
 
 export default function QuotationsPage() {
+  const { session } = useAuthStore();
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState<string>("all");
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    if (session) {
+      loadOrders();
+    }
+  }, [session]);
 
   async function loadOrders() {
     try {

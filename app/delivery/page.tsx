@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchDeliveries } from "@/lib/odoo/stock";
 import { formatDate, formatDateTime } from "@/lib/utils";
@@ -19,14 +20,17 @@ const STATE_TABS = [
 ];
 
 export default function DeliveryPage() {
+  const { session } = useAuthStore();
   const [pickings, setPickings] = useState<StockPicking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
 
   useEffect(() => {
-    loadPickings();
-  }, []);
+    if (session) {
+      loadPickings();
+    }
+  }, [session]);
 
   async function loadPickings() {
     try {

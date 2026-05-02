@@ -13,7 +13,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
     const isLoginPage = pathname === "/login";
 
     checkSession()
@@ -32,16 +31,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .finally(() => {
         setChecking(false);
+        setMounted(true);
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Before mount, render children to match server output (avoids hydration mismatch)
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  // Before mount or during initial session check, show nothing or a full-page loader
+  if (!mounted || checking) {
+    if (pathname === "/login") return null; // Avoid spinner on login page during initial load
 
-  // After mount, show loading spinner while checking session (except on login page)
-  if (checking && pathname !== "/login") {
     return (
       <div className="flex h-screen items-center justify-center bg-[var(--color-bg)]">
         <div className="flex flex-col items-center gap-3">

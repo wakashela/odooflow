@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchPurchaseOrders } from "@/lib/odoo/purchase";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -18,14 +19,17 @@ const STATE_TABS = [
 ];
 
 export default function PurchaseOrdersPage() {
+  const { session } = useAuthStore();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
 
   useEffect(() => {
-    loadOrders();
-  }, []);
+    if (session) {
+      loadOrders();
+    }
+  }, [session]);
 
   async function loadOrders() {
     try {

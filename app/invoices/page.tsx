@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchInvoices } from "@/lib/odoo/invoice";
 import { formatCurrency, formatDate } from "@/lib/utils";
@@ -25,14 +26,17 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 export default function InvoicesPage() {
+  const { session } = useAuthStore();
   const [invoices, setInvoices] = useState<AccountMove[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
 
   useEffect(() => {
-    loadInvoices();
-  }, []);
+    if (session) {
+      loadInvoices();
+    }
+  }, [session]);
 
   async function loadInvoices() {
     try {
