@@ -57,7 +57,6 @@ export async function GET(
           fields: [
             "name", "partner_id", "date_order", "validity_date",
             "amount_untaxed", "amount_tax", "amount_total", "note",
-            "x_tracking_no", "x_delivery_time", "x_ship_via",
           ],
           limit: 1,
         }
@@ -101,9 +100,6 @@ export async function GET(
         amountUntaxed={order.amount_untaxed as number}
         amountTax={order.amount_tax as number}
         amountTotal={order.amount_total as number}
-        trackingNo={order.x_tracking_no as string | undefined}
-        deliveryTime={order.x_delivery_time as string | undefined}
-        shipVia={order.x_ship_via as string | undefined}
         notes={order.note as string | undefined}
       />
     );

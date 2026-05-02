@@ -63,7 +63,7 @@ export async function GET(
         "search_read",
         [[["picking_id", "=", pickingId]]],
         {
-          fields: ["id", "product_id", "name", "product_uom_qty", "quantity_done", "product_uom"],
+          fields: ["id", "product_id", "name", "product_uom_qty", "quantity", "product_uom"],
           order: "id",
         }
       ),
@@ -80,7 +80,7 @@ export async function GET(
       id: m.id as number,
       productName: (m.product_id as [number, string])?.[1] || (m.name as string) || "",
       demand: (m.product_uom_qty as number) || 0,
-      done: (m.quantity_done as number) || 0,
+      done: (m.quantity as number) || 0,
       uom: (m.product_uom as [number, string])?.[1] || "-",
     }));
 

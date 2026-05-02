@@ -8,7 +8,7 @@ const PICKING_FIELDS = [
 
 const MOVE_FIELDS = [
   "id", "picking_id", "product_id", "name", "product_uom_qty",
-  "quantity_done", "product_uom",
+  "quantity", "product_uom",
 ];
 
 export async function fetchDeliveries(limit = 50, offset = 0): Promise<StockPicking[]> {

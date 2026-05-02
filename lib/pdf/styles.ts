@@ -1,22 +1,4 @@
-import { Font, StyleSheet } from "@react-pdf/renderer";
-
-Font.register({
-  family: "Sora",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQspDre2b2viVk8.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQUpDg2b2viVk8w.woff2", fontWeight: 600 },
-    { src: "https://fonts.gstatic.com/s/sora/v12/xMQbuFFYT72XzQspDre-N2viVk8.woff2", fontWeight: 700 },
-  ],
-});
-
-Font.register({
-  family: "DM Sans",
-  fonts: [
-    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriOZQ.woff2", fontWeight: 400 },
-    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Cp2ywxg089URIASLdn.woff2", fontWeight: 500 },
-    { src: "https://fonts.gstatic.com/s/dmsans/v15/rP2Ap2ywxg089URI5Lan4-f4a2E.woff2", fontWeight: 700 },
-  ],
-});
+import { StyleSheet } from "@react-pdf/renderer";
 
 export const PDF_COLORS = {
   primary: "#0F7B7B",
@@ -35,7 +17,7 @@ export const pdfStyles = StyleSheet.create({
   page: {
     padding: 0,
     fontSize: 9,
-    fontFamily: "DM Sans",
+    fontFamily: "Helvetica",
     color: PDF_COLORS.text,
   },
   header: {
@@ -52,8 +34,7 @@ export const pdfStyles = StyleSheet.create({
   },
   companyName: {
     fontSize: 16,
-    fontFamily: "Sora",
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.white,
   },
   companyInfo: {
@@ -70,8 +51,7 @@ export const pdfStyles = StyleSheet.create({
   },
   docTypeLabel: {
     fontSize: 11,
-    fontFamily: "Sora",
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.white,
   },
   infoSection: {
@@ -88,16 +68,14 @@ export const pdfStyles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 7,
-    fontFamily: "Sora",
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.textMuted,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   infoValue: {
     fontSize: 10,
-    fontFamily: "Sora",
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.text,
   },
   infoSubValue: {
@@ -124,8 +102,7 @@ export const pdfStyles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: PDF_COLORS.primary,
     color: PDF_COLORS.white,
-    fontFamily: "Sora",
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     fontSize: 8,
     textTransform: "uppercase",
     letterSpacing: 0.5,
@@ -153,7 +130,7 @@ export const pdfStyles = StyleSheet.create({
   colDate: { width: "12%" },
   colQty: { width: "8%", textAlign: "right" },
   colPrice: { width: "13%", textAlign: "right" },
-  colAmount: { width: "12%", textAlign: "right", fontFamily: "Sora", fontWeight: 600 },
+  colAmount: { width: "12%", textAlign: "right", fontFamily: "Helvetica-Bold" },
   colNum: { width: "5%", textAlign: "center", color: PDF_COLORS.textMuted },
   totalsSection: {
     flexDirection: "column",
@@ -177,8 +154,7 @@ export const pdfStyles = StyleSheet.create({
     width: "25%",
     textAlign: "right",
     fontSize: 9,
-    fontFamily: "Sora",
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
   },
   totalsTotalRow: {
     flexDirection: "row",
@@ -191,8 +167,7 @@ export const pdfStyles = StyleSheet.create({
     width: "40%",
     textAlign: "right",
     fontSize: 11,
-    fontFamily: "Sora",
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.primary,
     paddingRight: 16,
   },
@@ -200,8 +175,7 @@ export const pdfStyles = StyleSheet.create({
     width: "25%",
     textAlign: "right",
     fontSize: 11,
-    fontFamily: "Sora",
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.primary,
   },
   bankSection: {
@@ -212,8 +186,7 @@ export const pdfStyles = StyleSheet.create({
   },
   bankTitle: {
     fontSize: 7,
-    fontFamily: "Sora",
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
     letterSpacing: 1,
     color: PDF_COLORS.textMuted,
@@ -232,8 +205,7 @@ export const pdfStyles = StyleSheet.create({
     color: PDF_COLORS.textMuted,
   },
   bankValue: {
-    fontFamily: "Sora",
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.text,
   },
   footer: {
@@ -247,3 +219,4 @@ export const pdfStyles = StyleSheet.create({
     color: PDF_COLORS.textMuted,
   },
 });
+

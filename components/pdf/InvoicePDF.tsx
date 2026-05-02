@@ -1,5 +1,3 @@
-"use client";
-
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
 import type { LineItem } from "@/types/documents";

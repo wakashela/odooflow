@@ -1,4 +1,4 @@
-"use client";
+
 
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
@@ -82,7 +82,7 @@ export function DeliveryNotePDF({
               <Text style={[pdfStyles.tableCell, pdfStyles.colNum]}>{idx + 1}</Text>
               <Text style={[pdfStyles.tableCell, { width: "45%" }]}>{move.productName}</Text>
               <Text style={[pdfStyles.tableCell, { width: "15%", textAlign: "right" }]}>{move.demand}</Text>
-              <Text style={[pdfStyles.tableCell, { width: "15%", textAlign: "right", fontFamily: "Sora", fontWeight: 600 }]}>{move.done}</Text>
+              <Text style={[pdfStyles.tableCell, { width: "15%", textAlign: "right", fontFamily: "Helvetica-Bold", fontWeight: 600 }]}>{move.done}</Text>
               <Text style={[pdfStyles.tableCell, { width: "15%", textAlign: "right" }]}>{move.uom}</Text>
             </View>
           ))}
@@ -90,14 +90,14 @@ export function DeliveryNotePDF({
 
         <View style={{ padding: 40, flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ flexDirection: "column", gap: 4 }}>
-            <Text style={{ fontSize: 8, fontFamily: "Sora", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
+            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
               Received By
             </Text>
             <View style={{ borderBottomWidth: 1, borderColor: PDF_COLORS.border, width: 180, marginTop: 30 }} />
             <Text style={{ fontSize: 7, color: PDF_COLORS.textMuted }}>Name / Signature / Date</Text>
           </View>
           <View style={{ flexDirection: "column", gap: 4 }}>
-            <Text style={{ fontSize: 8, fontFamily: "Sora", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
+            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
               Delivered By
             </Text>
             <View style={{ borderBottomWidth: 1, borderColor: PDF_COLORS.border, width: 180, marginTop: 30 }} />
