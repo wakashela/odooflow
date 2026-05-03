@@ -1,120 +1,183 @@
 import { StyleSheet } from "@react-pdf/renderer";
 
-export const PDF_COLORS = {
-  primary: "#0F7B7B",
-  primaryDark: "#0A5C5C",
-  primaryLight: "#E8F4F4",
-  accent: "#D4A017",
-  text: "#1C1C1E",
-  textMuted: "#6B7280",
+// Design tokens inspired by the Jensen sample PDF
+export const C = {
+  teal: "#0A9688",
+  tealDark: "#00796B",
+  tealLight: "#E0F2F1",
+  tealMid: "#4DB6AC",
   white: "#FFFFFF",
-  rowAlt: "#F5F9F9",
-  border: "#E5E7EB",
-  totalsBg: "#E8F4F4",
+  black: "#1A1A1A",
+  textPrimary: "#212121",
+  textSecondary: "#616161",
+  textMuted: "#9E9E9E",
+  border: "#E0E0E0",
+  rowAlt: "#FAFAFA",
+  amber: "#F57F17",
+} as const;
+
+export const T = {
+  xs: 7,
+  sm: 8,
+  base: 9,
+  md: 10,
+  lg: 12,
+  xl: 16,
+} as const;
+
+export const S = {
+  xs: 2,
+  sm: 4,
+  md: 8,
+  lg: 12,
+  xl: 16,
+} as const;
+
+export const PDF_COLORS = {
+  primary: C.teal,
+  primaryDark: C.tealDark,
+  primaryLight: C.tealLight,
+  accent: C.amber,
+  text: C.textPrimary,
+  textMuted: C.textMuted,
+  white: C.white,
+  rowAlt: C.rowAlt,
+  border: C.border,
+  totalsBg: C.tealLight,
 };
 
 export const pdfStyles = StyleSheet.create({
+  // Page
   page: {
-    padding: 0,
-    fontSize: 9,
     fontFamily: "Helvetica",
+    fontSize: T.base,
     color: PDF_COLORS.text,
+    paddingTop: S.xl,
+    paddingBottom: S.xl + 4,
+    paddingHorizontal: S.xl * 2,
+    backgroundColor: PDF_COLORS.white,
   },
+
+  // Header
   header: {
-    backgroundColor: PDF_COLORS.primary,
-    padding: 20,
-    color: PDF_COLORS.white,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+    marginBottom: S.md,
+    borderBottomWidth: 1,
+    borderBottomColor: PDF_COLORS.border,
+    paddingBottom: S.md,
   },
   headerLeft: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: S.md,
+  },
+  logo: {
+    width: 120,
+    height: 42,
+    objectFit: "contain",
+  },
+  companyDetails: {
     flexDirection: "column",
-    gap: 4,
+    justifyContent: "space-between",
+    height: 42,
   },
   companyName: {
-    fontSize: 16,
+    fontSize: T.lg,
     fontFamily: "Helvetica-Bold",
-    color: PDF_COLORS.white,
+    color: PDF_COLORS.text,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
   companyInfo: {
-    fontSize: 8,
-    color: "rgba(255,255,255,0.85)",
+    fontSize: T.xs,
+    color: PDF_COLORS.textMuted,
     flexDirection: "column",
-    gap: 2,
+    gap: S.xs,
   },
+
+  // Document type badge
   docTypeBadge: {
-    backgroundColor: PDF_COLORS.accent,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 4,
+    alignSelf: "flex-start",
   },
   docTypeLabel: {
-    fontSize: 11,
+    fontSize: T.sm,
     fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.white,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
+
+  // Info block
   infoSection: {
     flexDirection: "row",
-    padding: 16,
-    gap: 1,
-    borderBottomWidth: 1,
+    paddingVertical: S.md,
+    gap: S.lg,
+    borderBottomWidth: 0.5,
     borderColor: PDF_COLORS.border,
   },
   infoCol: {
     flex: 1,
     flexDirection: "column",
-    gap: 4,
+    gap: S.xs,
   },
   infoLabel: {
-    fontSize: 7,
+    fontSize: T.xs,
     fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.textMuted,
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
   infoValue: {
-    fontSize: 10,
+    fontSize: T.md,
     fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.text,
   },
   infoSubValue: {
-    fontSize: 9,
+    fontSize: T.sm,
     color: PDF_COLORS.textMuted,
   },
+
+  // Shipping / small info bar
   shippingBar: {
     flexDirection: "row",
-    padding: 10,
-    paddingHorizontal: 16,
-    backgroundColor: "#F9FAFB",
-    borderBottomWidth: 1,
+    padding: S.md,
+    backgroundColor: PDF_COLORS.rowAlt,
+    borderBottomWidth: 0.5,
     borderColor: PDF_COLORS.border,
-    gap: 24,
+    gap: S.lg,
   },
   shippingItem: {
     flexDirection: "column",
-    gap: 2,
+    gap: S.xs,
   },
+
+  // Table
   table: {
-    margin: 0,
+    marginTop: S.md,
   },
   tableHeader: {
     flexDirection: "row",
     backgroundColor: PDF_COLORS.primary,
     color: PDF_COLORS.white,
     fontFamily: "Helvetica-Bold",
-    fontSize: 8,
+    fontSize: T.xs,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   tableHeaderCell: {
     paddingVertical: 8,
     paddingHorizontal: 10,
+    color: PDF_COLORS.white,
   },
   tableRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
-    borderColor: "#F3F4F6",
+    borderColor: PDF_COLORS.border,
     paddingVertical: 6,
   },
   tableRowAlt: {
@@ -123,19 +186,26 @@ export const pdfStyles = StyleSheet.create({
   tableCell: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    fontSize: 9,
+    fontSize: T.sm,
+    color: PDF_COLORS.text,
   },
-  colDesc: { width: "40%" },
+
+  // Columns
+  colDesc: { width: "42%" },
   colActivity: { width: "15%" },
   colDate: { width: "12%" },
   colQty: { width: "8%", textAlign: "right" },
-  colPrice: { width: "13%", textAlign: "right" },
+  colPrice: { width: "11%", textAlign: "right" },
   colAmount: { width: "12%", textAlign: "right", fontFamily: "Helvetica-Bold" },
   colNum: { width: "5%", textAlign: "center", color: PDF_COLORS.textMuted },
+
+  // Totals
   totalsSection: {
     flexDirection: "column",
-    borderTopWidth: 2,
-    borderColor: PDF_COLORS.primary,
+    marginTop: S.md,
+    borderTopWidth: 1.5,
+    borderTopColor: PDF_COLORS.primary,
+    paddingTop: S.sm,
   },
   totalsRow: {
     flexDirection: "row",
@@ -146,56 +216,60 @@ export const pdfStyles = StyleSheet.create({
   totalsLabel: {
     width: "40%",
     textAlign: "right",
-    fontSize: 9,
+    fontSize: T.sm,
     color: PDF_COLORS.textMuted,
     paddingRight: 16,
   },
   totalsValue: {
     width: "25%",
     textAlign: "right",
-    fontSize: 9,
+    fontSize: T.sm,
     fontFamily: "Helvetica-Bold",
   },
   totalsTotalRow: {
     flexDirection: "row",
     justifyContent: "flex-end",
-    backgroundColor: PDF_COLORS.totalsBg,
+    backgroundColor: PDF_COLORS.primary,
     paddingVertical: 10,
     paddingHorizontal: 16,
+    borderRadius: 2,
   },
   totalsTotalLabel: {
     width: "40%",
     textAlign: "right",
-    fontSize: 11,
+    fontSize: T.lg,
     fontFamily: "Helvetica-Bold",
-    color: PDF_COLORS.primary,
+    color: PDF_COLORS.white,
     paddingRight: 16,
   },
   totalsTotalValue: {
     width: "25%",
     textAlign: "right",
-    fontSize: 11,
+    fontSize: T.lg,
     fontFamily: "Helvetica-Bold",
-    color: PDF_COLORS.primary,
+    color: PDF_COLORS.white,
   },
+
+  // Bank details / footer block
   bankSection: {
     padding: 16,
     borderTopWidth: 1,
     borderColor: PDF_COLORS.border,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: PDF_COLORS.white,
+    marginTop: S.md,
   },
   bankTitle: {
-    fontSize: 7,
+    fontSize: T.xs,
     fontFamily: "Helvetica-Bold",
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 0.6,
     color: PDF_COLORS.textMuted,
     marginBottom: 8,
   },
   bankGrid: {
     flexDirection: "row",
     gap: 32,
-    fontSize: 8,
+    fontSize: T.xs,
   },
   bankCol: {
     flexDirection: "column",
@@ -203,11 +277,14 @@ export const pdfStyles = StyleSheet.create({
   },
   bankLabel: {
     color: PDF_COLORS.textMuted,
+    fontSize: T.xs,
   },
   bankValue: {
     fontFamily: "Helvetica-Bold",
     color: PDF_COLORS.text,
   },
+
+  // Footer
   footer: {
     position: "absolute",
     bottom: 20,
@@ -215,7 +292,7 @@ export const pdfStyles = StyleSheet.create({
     right: 20,
     flexDirection: "row",
     justifyContent: "space-between",
-    fontSize: 7,
+    fontSize: T.xs,
     color: PDF_COLORS.textMuted,
   },
 });

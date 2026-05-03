@@ -1,6 +1,6 @@
 
 
-import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
 
 interface DeliveryMove {
@@ -28,16 +28,21 @@ export function DeliveryNotePDF({
   origin,
   moves,
 }: DeliveryNotePDFProps) {
+  const logoPath = `${process.cwd()}/public/logo.png`;
+
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
-            <Text style={pdfStyles.companyName}>JENSEN INTERNATIONAL LIMITED</Text>
-            <View style={pdfStyles.companyInfo}>
-              <Text>TIN: 123-456-789 | VRN: 00-000-000</Text>
-              <Text>Dar es Salaam, Tanzania</Text>
-              <Text>Tel: +255 22 270 0000 | info@jensenintl.co.tz</Text>
+            <Image src={logoPath} style={pdfStyles.logo} />
+            <View style={pdfStyles.companyDetails}>
+              <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
+              <View style={pdfStyles.companyInfo}>
+                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
+                <Text>21493 Dar es salaam, TANZANIA</Text>
+                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+              </View>
             </View>
           </View>
           <View style={[pdfStyles.docTypeBadge, { backgroundColor: "#059669" }]}>
@@ -106,7 +111,7 @@ export function DeliveryNotePDF({
         </View>
 
         <View style={pdfStyles.footer}>
-          <Text>Jensen International Limited | TIN: 123-456-789</Text>
+          <Text>Jensen Automations Technology Limited | TIN: 168-782-179</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

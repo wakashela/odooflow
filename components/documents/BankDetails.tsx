@@ -10,16 +10,24 @@ export function BankDetails() {
           <span className="font-medium text-[var(--color-text)]">CRDB BANK</span>
         </div>
         <div>
+          <span className="text-[var(--color-text-muted)]">Beneficiary: </span>
+          <span className="font-medium text-[var(--color-text)]">Jensen Automations Technology Limited</span>
+        </div>
+        <div>
+          <span className="text-[var(--color-text-muted)]">TZS Account: </span>
+          <span className="font-medium text-[var(--color-text)]">015C001GAEC00</span>
+        </div>
+        <div>
+          <span className="text-[var(--color-text-muted)]">USD Account: </span>
+          <span className="font-medium text-[var(--color-text)]">025C001GAEC00</span>
+        </div>
+        <div>
           <span className="text-[var(--color-text-muted)]">Swift: </span>
           <span className="font-medium text-[var(--color-text)]">CORUTZTZ</span>
         </div>
         <div>
-          <span className="text-[var(--color-text-muted)]">Account: </span>
-          <span className="font-medium text-[var(--color-text)]">015C001GAEC00</span>
-        </div>
-        <div>
           <span className="text-[var(--color-text-muted)]">Branch: </span>
-          <span className="font-medium text-[var(--color-text)]">UDSM</span>
+          <span className="font-medium text-[var(--color-text)]">UDSM Branch</span>
         </div>
         <div>
           <span className="text-[var(--color-text-muted)]">Sort Code: </span>

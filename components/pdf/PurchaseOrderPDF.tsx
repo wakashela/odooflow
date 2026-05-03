@@ -1,6 +1,6 @@
 
 
-import { Document, Page, Text, View } from "@react-pdf/renderer";
+import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
 import type { LineItem } from "@/types/documents";
 import { formatCurrency } from "@/lib/utils";
@@ -30,16 +30,21 @@ export function PurchaseOrderPDF({
   amountTotal,
   notes,
 }: PurchaseOrderPDFProps) {
+  const logoPath = `${process.cwd()}/public/logo.png`;
+
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
-            <Text style={pdfStyles.companyName}>JENSEN INTERNATIONAL LIMITED</Text>
-            <View style={pdfStyles.companyInfo}>
-              <Text>TIN: 123-456-789 | VRN: 00-000-000</Text>
-              <Text>Dar es Salaam, Tanzania</Text>
-              <Text>Tel: +255 22 270 0000 | info@jensenintl.co.tz</Text>
+            <Image src={logoPath} style={pdfStyles.logo} />
+            <View style={pdfStyles.companyDetails}>
+              <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
+              <View style={pdfStyles.companyInfo}>
+                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
+                <Text>21493 Dar es salaam, TANZANIA</Text>
+                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+              </View>
             </View>
           </View>
           <View style={[pdfStyles.docTypeBadge, { backgroundColor: "#D4A017" }]}>
@@ -109,6 +114,23 @@ export function PurchaseOrderPDF({
           </View>
         </View>
 
+        <View style={pdfStyles.bankSection}>
+          <Text style={pdfStyles.bankTitle}>Bank Details</Text>
+          <View style={pdfStyles.bankGrid}>
+            <View style={pdfStyles.bankCol}>
+              <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>CRDB BANK</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>Jensen Automations Technology Limited</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>015C001GAEC00</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>025C001GAEC00</Text></Text>
+            </View>
+            <View style={pdfStyles.bankCol}>
+              <Text><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>CORUTZTZ</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>UDSM Branch</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>3386</Text></Text>
+            </View>
+          </View>
+        </View>
+
         {notes && (
           <View style={{ padding: 16, borderTopWidth: 1, borderColor: PDF_COLORS.border }}>
             <Text style={pdfStyles.infoLabel}>Notes</Text>
@@ -117,7 +139,7 @@ export function PurchaseOrderPDF({
         )}
 
         <View style={pdfStyles.footer}>
-          <Text>Jensen International Limited | TIN: 123-456-789</Text>
+          <Text>Jensen Automations Technology Limited | TIN: 168-782-179</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

@@ -23,6 +23,21 @@ export function DocumentHeader({
 }: DocumentHeaderProps) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-white overflow-hidden">
+      <div className="flex items-start gap-4 p-6">
+        <div className="w-[150px] h-[150px] flex items-center justify-center overflow-hidden rounded-md">
+          <img src="/logo.png" alt="Company logo" className="max-w-full max-h-full object-contain" />
+        </div>
+        <div className="flex-1">
+          <div className="text-lg font-bold uppercase tracking-wide text-[var(--color-text)]">
+            JENSEN AUTOMATIONS TECHNOLOGY LIMITED
+          </div>
+          <div className="mt-2 text-sm text-[var(--color-text-muted)] space-y-1">
+            <div>TIN: 168-782-179 | VRN: 40-315066-K</div>
+            <div>21493 Dar es salaam, TANZANIA</div>
+            <div>Tel: +255745205050 | info@jensenintl.com</div>
+          </div>
+        </div>
+      </div>
       <div className="flex items-center justify-between bg-[var(--color-primary)] px-6 py-3">
         <h2 className="text-sm font-bold text-white font-[family-name:var(--font-heading)] uppercase tracking-wider">
           {documentType}
