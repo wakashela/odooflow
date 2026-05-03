@@ -2,6 +2,7 @@
 
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
+import { getLogoSrc } from "@/lib/pdf/logo";
 import type { LineItem } from "@/types/documents";
 import { formatCurrency } from "@/lib/utils";
 
@@ -31,13 +32,14 @@ export function PurchaseOrderPDF({
   notes,
 }: PurchaseOrderPDFProps) {
   const logoPath = `${process.cwd()}/public/logo.png`;
+  const logoSrc = getLogoSrc();
 
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
-            <Image src={logoPath} style={pdfStyles.logo} />
+            {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
             <View style={pdfStyles.companyDetails}>
               <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
               <View style={pdfStyles.companyInfo}>
