@@ -77,7 +77,7 @@ export function PurchaseOrderPDF({
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>#</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colDesc]}>Description</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colQty]}>Qty</Text>
-            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Unit Price</Text>
+            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Rate</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colAmount]}>Amount (TZS)</Text>
           </View>
           {lines.map((line, idx) => (

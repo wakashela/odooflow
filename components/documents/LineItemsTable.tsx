@@ -33,7 +33,7 @@ export function LineItemsTable({
               Qty
             </th>
             <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-32">
-              Unit Price
+              Rate
             </th>
             {editable && (
               <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-20">
