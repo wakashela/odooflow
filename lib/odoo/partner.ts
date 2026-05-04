@@ -75,23 +75,25 @@ export async function updateCustomer(id: number, data: Partial<ResPartner>): Pro
   return true;
 }
 
-export async function createProduct(data: Partial<ProductProduct>): Promise<number> {
+export async function createProduct(data: Partial<ProductProduct & { description_sale?: string }>): Promise<number> {
   return odooCall<number>("product.product", "create", [[{
     name: data.name,
     default_code: data.default_code,
     list_price: data.list_price || 0,
     sale_ok: data.sale_ok ?? true,
     purchase_ok: data.purchase_ok ?? false,
+    description_sale: data.description_sale,
   }]]);
 }
 
-export async function updateProduct(id: number, data: Partial<ProductProduct>): Promise<boolean> {
+export async function updateProduct(id: number, data: Partial<ProductProduct & { description_sale?: string }>): Promise<boolean> {
   await odooCall("product.product", "write", [[id], {
     name: data.name,
     default_code: data.default_code,
     list_price: data.list_price,
     sale_ok: data.sale_ok,
     purchase_ok: data.purchase_ok,
+    description_sale: (data as any).description_sale,
   }]);
   return true;
 }
