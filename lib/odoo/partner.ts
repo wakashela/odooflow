@@ -32,3 +32,19 @@ export async function searchPartners(query: string, limit = 20): Promise<ResPart
     order: "name",
   });
 }
+
+export async function fetchCustomerById(id: number): Promise<ResPartner | null> {
+  const res = await odooCall<ResPartner[]>("res.partner", "search_read", [[["id", "=", id]]], {
+    fields: ["id", "name", "email", "phone", "street", "city", "vat", "is_company"],
+    limit: 1,
+  });
+  return res && res.length ? res[0] : null;
+}
+
+export async function fetchProductById(id: number): Promise<ProductProduct | null> {
+  const res = await odooCall<ProductProduct[]>("product.product", "search_read", [[["id", "=", id]]], {
+    fields: ["id", "name", "default_code", "list_price", "uom_id", "categ_id", "sale_ok", "purchase_ok"],
+    limit: 1,
+  });
+  return res && res.length ? res[0] : null;
+}

@@ -71,7 +71,10 @@ export const pdfStyles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: S.md,
+    marginLeft: -S.md,
+  },
+  headerLeftChild: {
+    marginLeft: S.md,
   },
   logo: {
     width: 120,
@@ -94,7 +97,9 @@ export const pdfStyles = StyleSheet.create({
     fontSize: T.xs,
     color: PDF_COLORS.textMuted,
     flexDirection: "column",
-    gap: S.xs,
+  },
+  companyInfoItem: {
+    marginBottom: 2,
   },
 
   // Document type badge
@@ -116,14 +121,17 @@ export const pdfStyles = StyleSheet.create({
   infoSection: {
     flexDirection: "row",
     paddingVertical: S.md,
-    gap: S.lg,
+    marginRight: -S.lg,
     borderBottomWidth: 0.5,
     borderColor: PDF_COLORS.border,
   },
   infoCol: {
     flex: 1,
     flexDirection: "column",
-    gap: S.xs,
+    marginRight: S.lg,
+  },
+  infoColItem: {
+    marginBottom: 2,
   },
   infoLabel: {
     fontSize: T.xs,
@@ -149,11 +157,14 @@ export const pdfStyles = StyleSheet.create({
     backgroundColor: PDF_COLORS.rowAlt,
     borderBottomWidth: 0.5,
     borderColor: PDF_COLORS.border,
-    gap: S.lg,
+    marginRight: -S.lg,
   },
   shippingItem: {
     flexDirection: "column",
-    gap: S.xs,
+    marginRight: S.lg,
+  },
+  shippingItemLabel: {
+    marginBottom: 2,
   },
 
   // Table
@@ -268,12 +279,13 @@ export const pdfStyles = StyleSheet.create({
   },
   bankGrid: {
     flexDirection: "row",
-    gap: 32,
     fontSize: T.xs,
   },
   bankCol: {
     flexDirection: "column",
-    gap: 3,
+  },
+  bankItem: {
+    marginBottom: 3,
   },
   bankLabel: {
     color: PDF_COLORS.textMuted,

@@ -10,19 +10,23 @@ import {
   Receipt,
   Truck,
   LayoutDashboard,
+  Package,
+  User,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
 import type { DocumentType } from "@/types/documents";
 
-const NAV_ITEMS: { type: DocumentType | "dashboard"; label: string; href: string; icon: React.ElementType }[] = [
+const NAV_ITEMS: { type: DocumentType | "dashboard" | string; label: string; href: string; icon: React.ElementType }[] = [
   { type: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
   { type: "quotation", label: "Quotations", href: "/quotations", icon: FileText },
   { type: "proforma", label: "Proforma", href: "/proforma", icon: FileCheck },
   { type: "purchase_order", label: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
   { type: "invoice", label: "Tax Invoices", href: "/invoices", icon: Receipt },
   { type: "delivery", label: "Delivery Notes", href: "/delivery", icon: Truck },
+  { type: "products", label: "Products", href: "/products", icon: Package },
+  { type: "customers", label: "Customers", href: "/customers", icon: User },
 ];
 
 export function Sidebar() {

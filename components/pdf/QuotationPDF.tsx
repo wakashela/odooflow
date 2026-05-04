@@ -49,16 +49,16 @@ export function QuotationPDF({
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
-            <View style={pdfStyles.companyDetails}>
+            <View style={[pdfStyles.companyDetails, pdfStyles.headerLeftChild]}>
               <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
               <View style={pdfStyles.companyInfo}>
-                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
-                <Text>21493 Dar es salaam, TANZANIA</Text>
-                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+                <Text style={pdfStyles.companyInfoItem}>TIN: 168-782-179 | VRN: 40-315066-K</Text>
+                <Text style={pdfStyles.companyInfoItem}>21493 Dar es salaam, TANZANIA</Text>
+                <Text style={pdfStyles.companyInfoItem}>Tel: +255745205050 | info@jensenintl.com</Text>
               </View>
             </View>
           </View>
-          <View style={pdfStyles.docTypeBadge}>
+          <View style={[pdfStyles.docTypeBadge, { backgroundColor: PDF_COLORS.primary }]}>
             <Text style={pdfStyles.docTypeLabel}>{documentType.toUpperCase()}</Text>
           </View>
         </View>
@@ -86,19 +86,19 @@ export function QuotationPDF({
             {shipVia && (
               <View style={pdfStyles.shippingItem}>
                 <Text style={pdfStyles.infoLabel}>Ship Via</Text>
-                <Text style={{ fontSize: 9, fontWeight: 600 }}>{shipVia}</Text>
+                <Text style={[pdfStyles.shippingItemLabel, { fontSize: 9, fontWeight: 600 }]}>{shipVia}</Text>
               </View>
             )}
             {trackingNo && (
               <View style={pdfStyles.shippingItem}>
                 <Text style={pdfStyles.infoLabel}>Tracking</Text>
-                <Text style={{ fontSize: 9, fontWeight: 600 }}>{trackingNo}</Text>
+                <Text style={[pdfStyles.shippingItemLabel, { fontSize: 9, fontWeight: 600 }]}>{trackingNo}</Text>
               </View>
             )}
             {deliveryTime && (
               <View style={pdfStyles.shippingItem}>
                 <Text style={pdfStyles.infoLabel}>Delivery Time</Text>
-                <Text style={{ fontSize: 9, fontWeight: 600 }}>{deliveryTime}</Text>
+                <Text style={[pdfStyles.shippingItemLabel, { fontSize: 9, fontWeight: 600 }]}>{deliveryTime}</Text>
               </View>
             )}
           </View>
@@ -161,14 +161,14 @@ export function QuotationPDF({
           <View style={pdfStyles.bankGrid}>
             <View style={pdfStyles.bankCol}>
               <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>CRDB BANK</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>Jensen Automations Technology Limited</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>015C001GAEC00</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>025C001GAEC00</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>Jensen Automations Technology Limited</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>015C001GAEC00</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>025C001GAEC00</Text></Text>
             </View>
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>CORUTZTZ</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>UDSM Branch</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>3386</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>CORUTZTZ</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>UDSM Branch</Text></Text>
+              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>3386</Text></Text>
             </View>
           </View>
         </View>

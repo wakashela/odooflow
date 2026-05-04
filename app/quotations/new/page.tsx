@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createQuotation } from "@/lib/odoo/sale";
-import { fetchCustomers, fetchProducts } from "@/lib/odoo/partner";
+import { fetchCustomers, fetchProducts, searchPartners } from "@/lib/odoo/partner";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,6 +22,12 @@ export default function NewQuotationPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [customerSuggestions, setCustomerSuggestions] = useState<ResPartner[]>([]);
+  const [customerSearching, setCustomerSearching] = useState(false);
+
+  const [productQueries, setProductQueries] = useState<Record<number, string>>({});
+
   const [partnerId, setPartnerId] = useState(0);
   const [validityDate, setValidityDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -33,6 +39,31 @@ export default function NewQuotationPage() {
       setProducts(prods);
     });
   }, []);
+
+  // Customer search (debounced)
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(async () => {
+      if (!customerQuery.trim()) {
+        setCustomerSuggestions([]);
+        return;
+      }
+      setCustomerSearching(true);
+      try {
+        const results = await searchPartners(customerQuery, 20);
+        if (!active) return;
+        setCustomerSuggestions(results);
+      } catch (err) {
+        console.error("Failed to search partners:", err);
+      } finally {
+        if (active) setCustomerSearching(false);
+      }
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [customerQuery]);
 
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);
   const taxAmount = subtotal * 0.18;
@@ -138,22 +169,38 @@ export default function NewQuotationPage() {
         </h1>
       </div>
 
-      <Card>
+<Card>
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-[var(--color-text)]">Customer</label>
-            <select
-              value={partnerId}
-              onChange={(e) => setPartnerId(Number(e.target.value))}
-              className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-            >
-              <option value={0}>Select a customer...</option>
-              {customers.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col gap-1.5 relative">
+            <Input
+              id="customer-search"
+              label="Customer"
+              value={customerQuery || (customers.find((c) => c.id === partnerId)?.name ?? "")}
+              onChange={(e) => {
+                setCustomerQuery(e.target.value);
+                setPartnerId(0);
+              }}
+              placeholder="Search customers..."
+            />
+            {customerQuery && customerSuggestions.length > 0 && (
+              <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
+                {customerSuggestions.map((c) => (
+                  <button
+                    key={c.id}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setPartnerId(c.id);
+                      setCustomerQuery(c.name);
+                      setCustomerSuggestions([]);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-border-light)]"
+                  >
+                    <div className="font-medium text-[var(--color-text)]">{c.name}</div>
+                    <div className="text-xs text-[var(--color-text-muted)]">{c.email || c.phone || c.city}</div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <Input
             label="Valid Until"
@@ -175,24 +222,45 @@ export default function NewQuotationPage() {
           </Button>
         </div>
 
-        {lines.map((line) => (
+        {lines.map((line) => {
+          const pq = productQueries[line.id] ?? "";
+          const lower = pq.toLowerCase();
+          const productMatches = pq
+            ? products.filter((p) =>
+                p.name.toLowerCase().includes(lower) ||
+                (p.default_code && p.default_code.toLowerCase().includes(lower))
+              ).slice(0, 50)
+            : [];
+
+          return (
           <Card key={line.id} padding="sm" className="space-y-3">
             <div className="flex items-start justify-between">
               <div className="flex-1 grid grid-cols-3 gap-3">
-                <div className="col-span-3 flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-[var(--color-text-muted)]">Product</label>
-                  <select
-                    value={line.productId || ""}
-                    onChange={(e) => selectProduct(line.id, Number(e.target.value))}
-                    className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm focus:border-[var(--color-primary)] focus:outline-none"
-                  >
-                    <option value="">Select product...</option>
-                    {products.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.default_code ? `${p.default_code} - ` : ""}{p.name} (TZS {p.list_price.toLocaleString()})
-                      </option>
-                    ))}
-                  </select>
+                <div className="col-span-3 flex flex-col gap-1.5 relative">
+                  <Input
+                    id={`product-${line.id}`}
+                    label="Product"
+                    value={pq || line.productLabel || ""}
+                    onChange={(e) => setProductQueries((prev) => ({ ...prev, [line.id]: e.target.value }))}
+                    placeholder="Select product..."
+                  />
+                  {productMatches.length > 0 && (
+                    <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
+                      {productMatches.map((p) => (
+                        <button
+                          key={p.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectProduct(line.id, p.id);
+                            setProductQueries((prev) => ({ ...prev, [line.id]: "" }));
+                          }}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-border-light)]"
+                        >
+                          {p.default_code ? `${p.default_code} - ` : ""}{p.name} (TZS {p.list_price.toLocaleString()})
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-3">
                   <Input
@@ -209,7 +277,7 @@ export default function NewQuotationPage() {
                   min={0}
                 />
                 <Input
-                  label="Unit Price (TZS)"
+                  label="Rate (TZS)"
                   type="number"
                   value={line.unitPrice}
                   onChange={(e) => updateLine(line.id, "unitPrice", Number(e.target.value))}
@@ -237,7 +305,8 @@ export default function NewQuotationPage() {
               Subtotal: {formatCurrency(line.subtotal)}
             </div>
           </Card>
-        ))}
+          )
+        })}
 
         {lines.length === 0 && (
           <div className="rounded-xl border-2 border-dashed border-[var(--color-border)] py-12 text-center text-[var(--color-text-muted)]">
