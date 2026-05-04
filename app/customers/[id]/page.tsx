@@ -7,6 +7,44 @@ import { fetchCustomerById, updateCustomer } from "@/lib/odoo/partner";
 import { type ResPartner } from "@/types/odoo";
 import { ArrowLeft, Edit2, Phone, Mail, MapPin, Building2, Check, X } from "lucide-react";
 
+function InfoRow({ icon: Icon, label, value, editable, onChange, animateIn, compact }: { icon: any; label: string; value: string | boolean | number; editable?: boolean; onChange?: (v: string | boolean) => void; animateIn?: boolean; compact?: boolean }) {
+  const isBoolean = typeof value === "boolean";
+  return (
+    <div className={`group flex items-start gap-3 ${compact ? 'py-2' : 'py-3 border-b border-[#f0ede9] last:border-b-0'} ${animateIn ? 'animate-fadeSlideUp opacity-0' : 'opacity-100'}`} style={{ animationDelay: animateIn ? '0.05s' : '' }}>
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
+        <Icon size={14} strokeWidth={2.5} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">{label}</p>
+        {editable ? (
+          isBoolean ? (
+            <label className="mt-1 flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={value as boolean}
+                onChange={(e) => onChange?.(e.target.checked)}
+                className="h-4 w-4 rounded border-[#e8e6e4] text-[#0f172a] focus:ring-[#0f172a]"
+              />
+              <span className="text-sm font-medium text-[#64748b]">Enabled</span>
+            </label>
+          ) : (
+            <input
+              value={value as string}
+              onChange={(e) => onChange?.(e.target.value)}
+              className="mt-0.5 w-full bg-transparent text-base font-medium text-[#0f172a] placeholder-[#cbd5e1] outline-none focus:ring-0"
+              placeholder={`Enter ${label.toLowerCase()}`}
+            />
+          )
+        ) : (
+          <p className="mt-0.5 text-base font-medium text-[#0f172a]">
+            {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value || <span className="text-[#cbd5e1]">—</span>}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function CustomerDetailPage() {
   const params = useParams();
   const id = Number(params.id);
@@ -48,31 +86,10 @@ export default function CustomerDetailPage() {
     }
   }
 
-  const InfoRow = ({ icon: Icon, label, value, editable, onChange, animateIn }: { icon: any; label: string; value: string; editable?: boolean; onChange?: (v: string) => void; animateIn?: boolean }) => (
-    <div className={`group relative flex items-start gap-4 rounded-2xl border border-[#e8e6e4] bg-[#fbfaf9] p-5 transition-all duration-500 hover:border-[#dcdbd9] hover:bg-[#fefbf9] ${animateIn ? 'animate-fadeSlideUp opacity-0' : 'opacity-100'}`} style={{ animationDelay: animateIn ? '0.1s' : '' }}>
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0f172a] text-white transition-transform duration-300 group-hover:scale-105">
-        <Icon size={18} strokeWidth={2.5} />
-      </div>
-      <div className="flex-1">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#94a3b8]">{label}</p>
-        {editing && editable ? (
-          <input
-            value={editForm[label.toLowerCase() as keyof Partial<ResPartner>] as string || value}
-            onChange={(e) => onChange?.(e.target.value)}
-            className="mt-1.5 w-full bg-transparent text-lg font-medium text-[#0f172a] placeholder-[#94a3b8] outline-none focus:ring-0"
-            placeholder={`Enter ${label.toLowerCase()}`}
-          />
-        ) : (
-          <p className="mt-1.5 text-lg font-medium text-[#0f172a]">{value || <span className="text-[#cbd5e1]">Not provided</span>}</p>
-        )}
-      </div>
-    </div>
-  );
-
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-12 w-12 animate-[spin_2s_linear_infinite] rounded-full border-3 border-[#0f172a] border-t-transparent" />
+        <div className="h-10 w-10 animate-[spin_1.5s_linear_infinite] rounded-full border-3 border-[#0f172a] border-t-transparent" />
       </div>
     );
   }
@@ -99,33 +116,37 @@ export default function CustomerDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f7f5]">
-      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#e8e4df] to-[#dcdad6] blur-[80px] opacity-60" />
+      <div className="fixed left-0 top-0 -z-10 h-full w-full">
+        <div className="absolute inset-0 bg-[#f8f7f5]" />
+        <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#e8e4df] to-[#dcdad6] blur-[100px] opacity-50" />
+      </div>
 
-      <div className="relative mx-auto max-w-3xl px-6 py-16 md:px-8 lg:px-12">
+      <div className="relative mx-auto max-w-2xl px-5 py-10 md:px-6 lg:px-8">
         <Link
           href="/customers"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748b] transition-colors hover:text-[#0f172a]"
+          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748b] transition-colors hover:text-[#0f172a] mb-6"
         >
           <ArrowLeft size={16} />
           All customers
         </Link>
 
-        <div className="mt-8">
-          <div className="flex items-end justify-between gap-6">
-            <div className="flex items-end gap-6">
-              <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-[#0f172a] text-2xl font-bold text-white shadow-lg transition-transform duration-500 hover:scale-105">
+        {/* Main Card - Quotation Style */}
+        <div className="rounded-2xl bg-[#fdfcfa] shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-[#e8e6e4]">
+          {/* Header Section */}
+          <div className="flex items-end justify-between gap-4 border-b border-[#f0ede9] p-5 md:p-6">
+            <div className="flex items-end gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#0f172a] text-2xl font-bold text-white">
                 {initials}
               </div>
               <div>
-                <h1 className="text-4xl font-bold text-[#0f172a] transition-colors duration-300">{customer.name}</h1>
+                <h1 className="text-xl font-bold text-[#0f172a]">{customer.name}</h1>
                 {customer.vat && (
-                  <p className="mt-1 text-sm text-[#64748b]">
-                    VAT: <span className="font-mono">{customer.vat}</span>
+                  <p className="mt-0.5 text-xs text-[#64748b]">
+                    <span className="font-mono">{customer.vat}</span>
                   </p>
                 )}
                 {customer.is_company && (
-                  <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-[#e8e4df] px-3 py-1 text-xs font-medium text-[#64748b]">
-                    <Building2 size={12} />
+                  <span className="mt-1.5 inline-flex items-center rounded bg-[#fef3c7] px-2 py-0.5 text-xs font-semibold text-[#92400e]">
                     Company
                   </span>
                 )}
@@ -136,7 +157,7 @@ export default function CustomerDetailPage() {
               {!editing ? (
                 <button
                   onClick={() => setEditing(true)}
-                  className="flex items-center gap-2 rounded-full bg-[#0f172a] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#0f172a]/20 transition-all hover:bg-[#1e293b] active:scale-[0.98]"
+                  className="flex items-center gap-1.5 rounded-lg bg-[#0f172a] px-4 py-2 text-sm font-medium text-white shadow-sm shadow-[#0f172a]/20 transition-all hover:bg-[#1e293b] active:scale-[0.97]"
                 >
                   <Edit2 size={14} />
                   Edit
@@ -148,7 +169,7 @@ export default function CustomerDetailPage() {
                       setEditing(false);
                       load();
                     }}
-                    className="flex items-center gap-2 rounded-full border border-[#e8e4df] bg-white px-5 py-2.5 text-sm font-medium text-[#64748b] transition-all hover:bg-[#f8f7f5] active:scale-[0.98]"
+                    className="flex items-center gap-1.5 rounded-lg border border-[#e8e4df] bg-white px-4 py-2 text-sm font-medium text-[#64748b] transition-all hover:bg-[#f8f7f5] active:scale-[0.97]"
                   >
                     <X size={14} />
                     Cancel
@@ -156,10 +177,10 @@ export default function CustomerDetailPage() {
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 rounded-full bg-[#0f172a] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#0f172a]/20 transition-all hover:bg-[#1e293b] disabled:opacity-50 active:scale-[0.98]"
+                    className="flex items-center gap-1.5 rounded-lg bg-[#0f172a] px-4 py-2 text-sm font-medium text-white shadow-sm shadow-[#0f172a]/20 transition-all hover:bg-[#1e293b] disabled:opacity-50 active:scale-[0.97]"
                   >
                     {saving ? (
-                      <div className="h-4 w-4 animate-[spin_1s_linear_infinite] rounded-full border-2 border-white/40 border-t-white" />
+                      <div className="h-4 w-4 animate-[spin_1s_linear_infinite] rounded-full border border-white/40 border-t-white" />
                     ) : (
                       <Check size={14} />
                     )}
@@ -170,18 +191,27 @@ export default function CustomerDetailPage() {
             </div>
           </div>
 
-          <div className="mt-10 space-y-3">
-            <InfoRow icon={Mail} label="Email" value={customer.email || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, email: v }))} animateIn />
-            <InfoRow icon={Phone} label="Phone" value={customer.phone || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, phone: v }))} animateIn />
-            <InfoRow icon={MapPin} label="Street" value={customer.street || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, street: v }))} animateIn />
-            <InfoRow icon={Building2} label="City" value={customer.city || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, city: v }))} animateIn />
-          </div>
-
-          {editing && (
-            <div className="mt-8 rounded-2xl border border-dashed border-[#e8e4df] bg-[#fbfaf9] p-8 text-center">
-              <p className="text-sm text-[#94a3b8]">Edit fields above to update customer details</p>
+          {/* Info Section - Two Column */}
+          <div className="p-5 md:p-6">
+            <div className="grid grid-cols-1 gap-x-12 gap-y-0 md:grid-cols-2">
+              <div className="space-y-0">
+                <InfoRow icon={Mail} label="Email" value={customer.email || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, email: v as string }))} animateIn />
+                <InfoRow icon={MapPin} label="Street" value={customer.street || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, street: v as string }))} animateIn />
+                <InfoRow icon={Building2} label="City" value={customer.city || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, city: v as string }))} animateIn />
+              </div>
+              <div className="space-y-0">
+                <InfoRow icon={Phone} label="Phone" value={customer.phone || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, phone: v as string }))} animateIn />
+                <InfoRow icon={Building2} label="VAT" value={customer.vat || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, vat: v as string }))} animateIn />
+                <InfoRow icon={Building2} label="Is Company" value={editForm.is_company ?? customer.is_company} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, is_company: v as boolean }))} animateIn />
+              </div>
             </div>
-          )}
+
+            {editing && (
+              <div className="mt-6 rounded-lg border border-dashed border-[#e8e4df] bg-[#fbfaf9] p-4 text-center">
+                <p className="text-xs text-[#94a3b8]">Edit fields above to update customer details</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
