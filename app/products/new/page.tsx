@@ -15,9 +15,11 @@ export default function NewProductPage() {
   const [name, setName] = useState("");
   const [defaultCode, setDefaultCode] = useState("");
   const [description, setDescription] = useState("");
-  const [listPrice, setListPrice] = useState(0);
+  const [productType, setProductType] = useState<"product" | "service">("product");
   const [saleOk, setSaleOk] = useState(true);
   const [purchaseOk, setPurchaseOk] = useState(false);
+  const [listPrice, setListPrice] = useState(0);
+  const [standardPrice, setStandardPrice] = useState(0);
 
   async function handleSave() {
     if (!name.trim()) {
@@ -31,9 +33,11 @@ export default function NewProductPage() {
         name: name.trim(),
         default_code: defaultCode.trim() || undefined,
         description_sale: description.trim() || undefined,
-        list_price: listPrice,
+        type: productType,
         sale_ok: saleOk,
         purchase_ok: purchaseOk,
+        list_price: listPrice,
+        standard_price: standardPrice,
       });
       router.push("/products");
     } catch (err) {
@@ -58,18 +62,45 @@ export default function NewProductPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
         {/* Left Column */}
         <div className="space-y-6">
-          <Input 
-            label="Product Name *" 
-            placeholder="e.g., Laptop Pro 15" 
-            value={name} 
-            onChange={(e) => setName(e.target.value)} 
+          <Input
+            label="Product Name *"
+            placeholder="e.g., Laptop Pro 15"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
-          <Input 
-            label="SKU / Default Code" 
-            placeholder="e.g., LP-1500-BLK" 
-            value={defaultCode} 
-            onChange={(e) => setDefaultCode(e.target.value)} 
+          <Input
+            label="SKU / Default Code"
+            placeholder="e.g., LP-1500-BLK"
+            value={defaultCode}
+            onChange={(e) => setDefaultCode(e.target.value)}
           />
+          <div className="flex flex-col gap-1">
+            <span className="text-[14px] font-medium text-[var(--color-muted)]">Product Type</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setProductType("product")}
+                className={`flex-1 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
+                  productType === "product"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
+                    : "border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+                }`}
+              >
+                Product
+              </button>
+              <button
+                type="button"
+                onClick={() => setProductType("service")}
+                className={`flex-1 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
+                  productType === "service"
+                    ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
+                    : "border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+                }`}
+              >
+                Service
+              </button>
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
             <span className="text-[14px] font-medium text-[var(--color-muted)]">Description</span>
             <textarea
@@ -84,16 +115,6 @@ export default function NewProductPage() {
 
         {/* Right Column */}
         <div className="space-y-6">
-          <Input 
-            label="Rate (TZS)" 
-            type="number"
-            placeholder="0.00" 
-            min={0}
-            step={0.01}
-            value={listPrice || ""} 
-            onChange={(e) => setListPrice(Number(e.target.value) || 0)} 
-          />
-          
           <div className="flex flex-col gap-1 pt-1">
             <span className="text-[14px] font-medium text-[var(--color-muted)]">Availability Settings</span>
             <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[var(--color-hairline)] px-3.5 h-[56px] transition-colors hover:border-[var(--color-ink)]">
@@ -115,6 +136,30 @@ export default function NewProductPage() {
               />
             </label>
           </div>
+
+          {saleOk && (
+            <Input
+              label="Sale Price (TZS)"
+              type="number"
+              placeholder="0.00"
+              min={0}
+              step={0.01}
+              value={listPrice || ""}
+              onChange={(e) => setListPrice(Number(e.target.value) || 0)}
+            />
+          )}
+
+          {purchaseOk && (
+            <Input
+              label="Purchase Price (TZS)"
+              type="number"
+              placeholder="0.00"
+              min={0}
+              step={0.01}
+              value={standardPrice || ""}
+              onChange={(e) => setStandardPrice(Number(e.target.value) || 0)}
+            />
+          )}
         </div>
       </div>
 

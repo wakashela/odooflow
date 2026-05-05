@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
@@ -24,11 +23,7 @@ export default function ProformaPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  useEffect(() => {
-    if (session) loadOrders();
-  }, [session]);
-
-  async function loadOrders() {
+  const loadOrders = useCallback(async () => {
     try {
       setLoading(true);
       const data = await fetchQuotations();
@@ -38,7 +33,11 @@ export default function ProformaPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    if (session) loadOrders();
+  }, [session, loadOrders]);
 
   const filtered = orders.filter((o) => {
     const matchesSearch =
@@ -65,9 +64,15 @@ export default function ProformaPage() {
     currentPage * PAGE_SIZE
   );
 
-  useEffect(() => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
     setCurrentPage(1);
-  }, [search, filter]);
+  };
+
+  const handleFilterChange = (newFilter: ProformaFilter) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
 
   const toggleSelectAll = () => {
     if (selectedIds.size === pagedOrders.length && pagedOrders.length > 0) {
@@ -103,7 +108,7 @@ export default function ProformaPage() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setFilter(tab.key)}
+            onClick={() => handleFilterChange(tab.key)}
             className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
               filter === tab.key
                 ? "bg-[var(--color-primary)] text-white"
@@ -124,7 +129,7 @@ export default function ProformaPage() {
           type="text"
           placeholder="Search by order number or customer..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={handleSearchChange}
           className="w-full h-[40px] rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] pl-12 pr-4 text-[14px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-all"
         />
       </div>

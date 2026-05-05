@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
@@ -36,6 +35,10 @@ export default function ProductsPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (session) loadProducts();
+  }, [session, loadProducts]);
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setCurrentPage(1);
@@ -46,16 +49,30 @@ export default function ProductsPage() {
     setCurrentPage(1);
   };
 
+  const filtered = products.filter((p) => {
+    const matchesSearch =
+      !search ||
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.default_code && p.default_code.toLowerCase().includes(search.toLowerCase()));
+
+    let matchesFilter = true;
+    if (filter === "sale") matchesFilter = p.sale_ok && !p.purchase_ok;
+    else if (filter === "purchase") matchesFilter = !p.sale_ok && p.purchase_ok;
+    else if (filter === "both") matchesFilter = p.sale_ok && p.purchase_ok;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  const saleCount = products.filter((p) => p.sale_ok && !p.purchase_ok).length;
+  const purchaseCount = products.filter((p) => !p.sale_ok && p.purchase_ok).length;
+  const bothCount = products.filter((p) => p.sale_ok && p.purchase_ok).length;
+
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
   const pagedProducts = filtered.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, filter]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === pagedProducts.length && pagedProducts.length > 0) {
@@ -142,9 +159,10 @@ export default function ProductsPage() {
                     />
                   </th>
                   <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">SKU</th>
-                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider w-[35%]">Name</th>
-                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Category</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider w-[30%]">Name</th>
                   <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Category</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Kind</th>
                   <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider text-right">Price</th>
                 </tr>
               </thead>
@@ -165,6 +183,17 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-4 py-2 font-semibold text-[var(--color-ink)]">{p.default_code || "-"}</td>
                     <td className="px-4 py-2 text-[var(--color-ink)]">{p.name}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                          p.type === "service"
+                            ? "bg-indigo-50 text-indigo-700"
+                            : "bg-emerald-50 text-emerald-700"
+                        }`}
+                      >
+                        {p.type === "service" ? "Service" : "Product"}
+                      </span>
+                    </td>
                     <td className="px-4 py-2 text-[var(--color-muted)] text-sm">{p.categ_id?.[1] || "-"}</td>
                     <td className="px-4 py-2">
                       <span
@@ -200,7 +229,7 @@ export default function ProductsPage() {
               </tbody>
               <tfoot className="bg-[var(--color-surface-soft)] border-t border-[var(--color-hairline)]">
                 <tr>
-                  <td colSpan={5} className="px-4 py-1.5 text-right text-sm font-semibold text-[var(--color-muted)] uppercase tracking-wider">
+                  <td colSpan={6} className="px-4 py-1.5 text-right text-sm font-semibold text-[var(--color-muted)] uppercase tracking-wider">
                     Total Products:
                   </td>
                   <td className="px-4 py-1.5 text-right font-bold text-[14px] text-[var(--color-ink)]">
