@@ -39,7 +39,7 @@ export default function ProformaPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-[1080px] mx-auto py-12 px-8 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
           Proforma Invoices

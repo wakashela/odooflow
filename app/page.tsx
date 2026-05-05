@@ -128,7 +128,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="w-full py-12 px-10 space-y-6">
       <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
         Dashboard
       </h1>

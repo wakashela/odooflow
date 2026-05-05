@@ -90,7 +90,7 @@ export default function DeliveryDetailPage() {
   const completedSteps: DocumentType[] = ["quotation", "proforma", "purchase_order", "invoice"];
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="w-full py-12 px-10 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/delivery" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]">

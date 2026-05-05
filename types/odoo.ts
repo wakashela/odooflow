@@ -19,6 +19,9 @@ export interface SaleOrder {
   x_part_make?: string;
   invoice_ids?: number[];
   picking_ids?: number[];
+  user_id?: OdooRelation;
+  activity_state?: string;
+  client_order_ref?: string | false;
 }
 
 export interface SaleOrderLine {

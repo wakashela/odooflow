@@ -4,7 +4,7 @@ import type { SaleOrder, SaleOrderLine } from "@/types/odoo";
 const SALE_FIELDS = [
   "name", "state", "partner_id", "date_order", "validity_date",
   "order_line", "amount_untaxed", "amount_tax", "amount_total",
-  "note", "invoice_ids", "picking_ids",
+  "note", "invoice_ids", "picking_ids", "user_id", "activity_state", "client_order_ref",
 ];
 
 const LINE_FIELDS = [

@@ -10,11 +10,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
     return (
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1">
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-[var(--color-text)]"
+            className="text-[14px] font-medium text-[var(--color-muted)]"
           >
             {label}
           </label>
@@ -23,14 +23,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            "rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-light)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 transition-colors",
-            error && "border-[var(--color-danger)] focus:ring-[var(--color-danger)]/20",
+            "rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] px-3.5 h-[56px] text-[16px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-colors",
+            error && "border-[var(--color-error)] text-[var(--color-error)] focus:border-[var(--color-error)]",
             className
           )}
           {...props}
         />
         {error && (
-          <p className="text-xs text-[var(--color-danger)]">{error}</p>
+          <p className="text-[12px] text-[var(--color-error)]">{error}</p>
         )}
       </div>
     );
@@ -38,3 +38,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = "Input";
+

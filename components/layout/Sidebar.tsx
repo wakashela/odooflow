@@ -1,89 +1,101 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  FileText,
-  FileCheck,
-  ShoppingCart,
-  Receipt,
-  Truck,
-  LayoutDashboard,
-  Package,
-  User,
-  ChevronLeft,
-  ChevronRight,
+import { useAuthStore } from "@/store/authStore";
+import { logout } from "@/lib/odoo/auth";
+import { useRouter } from "next/navigation";
+import { 
+  LayoutDashboard, 
+  FileText, 
+  FileSignature, 
+  ShoppingCart, 
+  Receipt, 
+  Truck, 
+  Package, 
+  Users,
+  LogOut 
 } from "lucide-react";
-import { useState } from "react";
-import type { DocumentType } from "@/types/documents";
 
-const NAV_ITEMS: { type: DocumentType | "dashboard" | string; label: string; href: string; icon: React.ElementType }[] = [
-  { type: "dashboard", label: "Dashboard", href: "/", icon: LayoutDashboard },
-  { type: "quotation", label: "Quotations", href: "/quotations", icon: FileText },
-  { type: "proforma", label: "Proforma", href: "/proforma", icon: FileCheck },
-  { type: "purchase_order", label: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
-  { type: "invoice", label: "Tax Invoices", href: "/invoices", icon: Receipt },
-  { type: "delivery", label: "Delivery Notes", href: "/delivery", icon: Truck },
-  { type: "products", label: "Products", href: "/products", icon: Package },
-  { type: "customers", label: "Customers", href: "/customers", icon: User },
+const NAV_ITEMS = [
+  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Quotations", href: "/quotations", icon: FileText },
+  { label: "Proforma", href: "/proforma", icon: FileSignature },
+  { label: "Orders", href: "/purchase-orders", icon: ShoppingCart },
+  { label: "Invoices", href: "/invoices", icon: Receipt },
+  { label: "Delivery", href: "/delivery", icon: Truck },
+  { label: "Products", href: "/products", icon: Package },
+  { label: "Customers", href: "/customers", icon: Users },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const { session, reset } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    reset();
+    router.replace("/login");
+  };
 
   return (
-    <aside
-      className={cn(
-        "flex flex-col border-r border-[var(--color-border)] bg-white transition-all duration-200",
-        collapsed ? "w-16" : "w-56"
-      )}
-    >
-      <div className="flex h-16 items-center gap-3 border-b border-[var(--color-border)] px-4">
-        <img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-        {!collapsed && (
-          <div className="flex flex-col">
-            <span className="text-sm font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
-              OdooFlow
-            </span>
-            <span className="text-[10px] text-[var(--color-text-muted)]">
-              Jensen International
-            </span>
-          </div>
-        )}
+    <aside className="w-[200px] flex-shrink-0 flex flex-col bg-white border-r border-[var(--color-hairline)] shadow-sm h-screen sticky top-0 left-0 z-10">
+      {/* Logo Area */}
+      <div className="h-[80px] flex items-center px-8">
+        <div className="flex items-center gap-2 text-[var(--color-primary)] font-bold text-xl">
+          <Image src="/logo.png" alt="OdooFlow Logo" width={32} height={32} className="h-8 w-auto object-contain" priority />
+          <span className="font-bold">OdooFlow</span>
+        </div>
       </div>
 
-      <nav className="flex-1 py-4 px-2 space-y-1">
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1 no-scrollbar">
         {NAV_ITEMS.map((item) => {
-        const isActive =
-          item.type === "dashboard"
-            ? pathname === "/"
-            : pathname === item.href || pathname.startsWith(item.href + "/");
+          const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const Icon = item.icon;
           return (
             <Link
-              key={item.type}
+              key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-[var(--color-primary-light)] text-[var(--color-primary)]"
-                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-border-light)] hover:text-[var(--color-text)]"
+                "flex items-center gap-3 px-3 py-3 rounded-lg text-[15px] font-medium transition-colors",
+                isActive 
+                  ? "bg-[var(--color-surface-soft)] text-[var(--color-ink)]" 
+                  : "text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] hover:text-[var(--color-ink)]"
               )}
             >
-              <item.icon size={18} />
-              {!collapsed && <span>{item.label}</span>}
+              <Icon size={20} className={isActive ? "text-[var(--color-primary)]" : "text-inherit"} />
+              {item.label}
             </Link>
           );
         })}
       </nav>
 
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center justify-center border-t border-[var(--color-border)] py-3 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors"
-      >
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
+      {/* Footer Area / User Info */}
+      <div className="p-4 border-t border-[var(--color-hairline)] space-y-1">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <div className="w-8 h-8 rounded-full bg-[var(--color-surface-soft)] text-[var(--color-ink)] flex items-center justify-center font-bold text-sm">
+            {session?.name ? session.name[0].toUpperCase() : "U"}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-[14px] font-semibold text-[var(--color-ink)] truncate">
+              {session?.name || "User"}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2 text-[14px] font-medium text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors rounded-lg group"
+        >
+          <div className="w-8 h-8 rounded-full bg-[var(--color-surface-soft)] flex items-center justify-center text-[var(--color-muted)] group-hover:text-[var(--color-primary)] transition-colors">
+            <LogOut size={16} />
+          </div>
+          Log out
+        </button>
+      </div>
     </aside>
   );
 }

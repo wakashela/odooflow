@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createProduct } from "@/lib/odoo/partner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Plus, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function NewProductPage() {
@@ -44,154 +44,88 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f5] text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[#f8f7f5]" />
-        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-200/40 to-purple-200/40 blur-[120px] mix-blend-multiply opacity-70 animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-emerald-200/40 to-teal-200/40 blur-[120px] mix-blend-multiply opacity-70 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+    <div className="w-full py-12 px-10 space-y-6">
+      <Link href="/products" className="inline-flex items-center gap-2 text-[var(--color-ink)] font-medium mb-8 hover:underline">
+        <ArrowLeft size={16} />
+        Back to Products
+      </Link>
+
+      <div className="mb-8">
+        <h1 className="text-[28px] font-bold tracking-tight text-[var(--color-ink)]">New Product</h1>
+        <p className="mt-2 text-[16px] text-[var(--color-muted)]">Add a new product or service</p>
       </div>
 
-      <div className="relative z-10 mx-auto max-w-3xl px-5 py-6 md:px-8 lg:px-12">
-        <Link
-          href="/products"
-          className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-all hover:text-slate-900 mb-4 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-white/60 shadow-sm backdrop-blur-md"
-        >
-          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-          All Products
-        </Link>
-
-        {/* Main Card */}
-        <div className="rounded-[1.5rem] bg-white/70 backdrop-blur-2xl shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white overflow-hidden transition-all duration-500 hover:shadow-[0_16px_60px_rgb(0,0,0,0.08)]">
-          {/* Header Section */}
-          <div className="relative overflow-hidden p-5 md:p-6 border-b border-slate-100/50">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent pointer-events-none" />
-            <div className="relative flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/20 ring-4 ring-white/50">
-                <Plus size={24} strokeWidth={2.5} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>New Product</h1>
-                <p className="mt-0.5 text-xs font-medium text-slate-500">Add a new product or service</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Form Section */}
-          <div className="p-5 md:p-6">
-            <div className="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
-              {/* Left Column */}
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                    Product Name *
-                  </label>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-3 py-2 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
-                    placeholder="e.g., Laptop Pro 15"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-3">SKU / Default Code</label>
-                  <input
-                    value={defaultCode}
-                    onChange={(e) => setDefaultCode(e.target.value)}
-                    className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-3 py-2 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition-all duration-300 font-mono"
-                    placeholder="e.g., LP-1500-BLK"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-3">Description</label>
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full resize-none bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-3 py-2 text-sm font-medium text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
-                    placeholder="Brief product description..."
-                    rows={2}
-                  />
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-3">Rate (TZS)</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-medium">TZS</span>
-                    <input
-                      value={listPrice || ""}
-                      onChange={(e) => setListPrice(Number(e.target.value) || 0)}
-                      type="number"
-                      className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl pl-10 pr-3 py-2 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
-                      placeholder="0.00"
-                      min={0}
-                      step={0.01}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-3">Availability Settings</label>
-                  
-                  <label className="group relative flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-white/50 px-3 py-2 transition-all hover:bg-white hover:border-emerald-200">
-                    <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">Available for Sale</span>
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={saleOk}
-                        onChange={(e) => setSaleOk(e.target.checked)}
-                        className="peer sr-only"
-                      />
-                      <div className="h-5 w-9 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
-                      <div className="absolute left-[2px] top-[2px] h-4 w-4 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
-                    </div>
-                  </label>
-
-                  <label className="group relative flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-white/50 px-3 py-2 mt-2 transition-all hover:bg-white hover:border-emerald-200">
-                    <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">Available for Purchase</span>
-                    <div className="relative flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={purchaseOk}
-                        onChange={(e) => setPurchaseOk(e.target.checked)}
-                        className="peer sr-only"
-                      />
-                      <div className="h-5 w-9 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
-                      <div className="absolute left-[2px] top-[2px] h-4 w-4 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
-                    </div>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-end gap-3 bg-slate-50/50 p-4 md:px-6 border-t border-slate-100/50 backdrop-blur-sm">
-            <Link href="/products">
-              <button className="rounded-xl border border-slate-200 bg-white px-5 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow active:scale-[0.98]">
-                Cancel
-              </button>
-            </Link>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-slate-900 px-5 py-2 text-sm font-bold text-white shadow-md shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/30 disabled:opacity-70 active:scale-[0.98]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              {saving ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
-              ) : (
-                <Plus size={16} strokeWidth={3} className="transition-transform group-hover:rotate-90 duration-300" />
-              )}
-              <span>Create Product</span>
-            </button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          <Input 
+            label="Product Name *" 
+            placeholder="e.g., Laptop Pro 15" 
+            value={name} 
+            onChange={(e) => setName(e.target.value)} 
+          />
+          <Input 
+            label="SKU / Default Code" 
+            placeholder="e.g., LP-1500-BLK" 
+            value={defaultCode} 
+            onChange={(e) => setDefaultCode(e.target.value)} 
+          />
+          <div className="flex flex-col gap-1">
+            <span className="text-[14px] font-medium text-[var(--color-muted)]">Description</span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] px-3.5 py-3 text-[16px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-colors resize-none"
+              placeholder="Brief product description..."
+              rows={3}
+            />
           </div>
         </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          <Input 
+            label="Rate (TZS)" 
+            type="number"
+            placeholder="0.00" 
+            min={0}
+            step={0.01}
+            value={listPrice || ""} 
+            onChange={(e) => setListPrice(Number(e.target.value) || 0)} 
+          />
+          
+          <div className="flex flex-col gap-1 pt-1">
+            <span className="text-[14px] font-medium text-[var(--color-muted)]">Availability Settings</span>
+            <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[var(--color-hairline)] px-3.5 h-[56px] transition-colors hover:border-[var(--color-ink)]">
+              <span className="text-[16px] text-[var(--color-ink)]">Available for Sale</span>
+              <input
+                type="checkbox"
+                checked={saleOk}
+                onChange={(e) => setSaleOk(e.target.checked)}
+                className="w-5 h-5 accent-[var(--color-primary)] cursor-pointer"
+              />
+            </label>
+            <label className="flex cursor-pointer items-center justify-between rounded-lg border border-[var(--color-hairline)] px-3.5 h-[56px] transition-colors hover:border-[var(--color-ink)] mt-2">
+              <span className="text-[16px] text-[var(--color-ink)]">Available for Purchase</span>
+              <input
+                type="checkbox"
+                checked={purchaseOk}
+                onChange={(e) => setPurchaseOk(e.target.checked)}
+                className="w-5 h-5 accent-[var(--color-primary)] cursor-pointer"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-12 flex items-center justify-end gap-4 pt-6 border-t border-[var(--color-hairline)]">
+        <Link href="/products">
+          <Button variant="tertiary-text">Cancel</Button>
+        </Link>
+        <Button onClick={handleSave} disabled={saving} className="min-w-[160px]">
+          {saving ? "Saving..." : "Create Product"}
+        </Button>
       </div>
     </div>
   );

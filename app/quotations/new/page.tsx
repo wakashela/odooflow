@@ -159,7 +159,7 @@ export default function NewQuotationPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="w-full py-12 px-10 space-y-6">
       <div className="flex items-center gap-4">
         <Link href="/quotations" className="text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
           <ArrowLeft size={20} />

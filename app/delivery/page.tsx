@@ -6,9 +6,8 @@ import Link from "next/link";
 import { fetchDeliveries } from "@/lib/odoo/stock";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
 import type { StockPicking } from "@/types/odoo";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const STATE_TABS = [
   { key: "all", label: "All" },
@@ -25,6 +24,8 @@ export default function DeliveryPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [stateFilter, setStateFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   useEffect(() => {
     if (session) {
@@ -59,9 +60,19 @@ export default function DeliveryPage() {
     counts[p.state] = (counts[p.state] || 0) + 1;
   }
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pagedPickings = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, stateFilter]);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full px-8 space-y-2">
+      <div className="h-[64px] flex items-center justify-between">
         <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
           Delivery Notes
         </h1>
@@ -85,15 +96,15 @@ export default function DeliveryPage() {
 
       <div className="relative">
         <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-light)]"
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
         />
         <input
           type="text"
           placeholder="Search by picking, origin, or customer..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-[var(--color-border)] bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-[var(--color-text-light)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+          className="w-full h-[40px] rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] pl-12 pr-4 text-[14px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-all"
         />
       </div>
 
@@ -102,39 +113,78 @@ export default function DeliveryPage() {
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((picking) => (
-            <Link key={picking.id} href={`/delivery/${picking.id}`}>
-              <Card padding="none" className="hover:shadow-md transition-shadow mb-2">
-                <div className="flex items-center justify-between px-6 py-4">
-                  <div className="flex items-center gap-6">
-                    <div>
-                      <p className="text-sm font-semibold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
-                        {picking.name}
-                      </p>
-                      <p className="text-xs text-[var(--color-text-muted)]">
-                        {picking.partner_id[1]}
-                        {picking.origin && (
-                          <span className="ml-2 text-[var(--color-text-light)]">
-                            from {picking.origin}
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                    <p className="text-xs text-[var(--color-text-muted)]">
-                      {formatDate(picking.scheduled_date)}
-                    </p>
-                  </div>
-                  <Badge state={picking.state} />
-                </div>
-              </Card>
-            </Link>
-          ))}
+        <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[var(--color-surface-soft)] border-b border-[var(--color-hairline)]">
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Number</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider w-[35%]">Customer</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Origin</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Scheduled Date</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-hairline)]">
+                {pagedPickings.map((picking) => (
+                  <tr
+                    key={picking.id}
+                    onClick={() => window.location.href = `/delivery/${picking.id}`}
+                    className="hover:bg-[var(--color-surface-soft)] transition-colors cursor-pointer"
+                  >
+                    <td className="px-4 py-2 font-semibold text-[var(--color-ink)]">{picking.name}</td>
+                    <td className="px-4 py-2 text-[var(--color-ink)]">{picking.partner_id[1]}</td>
+                    <td className="px-4 py-2 text-[14px] text-[var(--color-muted)]">{picking.origin || "-"}</td>
+                    <td className="px-4 py-2 text-[14px] text-[var(--color-muted)]">{formatDate(picking.scheduled_date)}</td>
+                    <td className="px-4 py-2"><Badge state={picking.state} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           {filtered.length === 0 && (
-            <Card className="py-12 text-center text-[var(--color-text-muted)]">
+            <div className="py-12 text-center text-[var(--color-muted)]">
               No delivery notes found
-            </Card>
+            </div>
           )}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && filtered.length > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-[var(--color-muted)]">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`min-w-[36px] h-[36px] rounded-lg text-sm font-medium transition-colors ${
+                  page === currentPage
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)]"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       )}
     </div>

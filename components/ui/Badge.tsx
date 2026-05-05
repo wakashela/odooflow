@@ -21,6 +21,7 @@ interface BadgeProps {
 
 export function Badge({ state, className }: BadgeProps) {
   const style = STATUS_STYLES[state] || STATUS_STYLES.draft;
+  const displayLabel = state === 'sale' ? 'confirmed' : state;
   return (
     <span
       className={cn(
@@ -29,7 +30,7 @@ export function Badge({ state, className }: BadgeProps) {
         className
       )}
     >
-      {state}
+      {displayLabel}
     </span>
   );
 }

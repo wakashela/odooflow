@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { ProductProduct } from "@/types/odoo";
-import { Search, Plus, Edit2, Check, X } from "lucide-react";
+import { Search, Plus, Edit2, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ProductsPage() {
   const { session } = useAuthStore();
@@ -98,7 +98,7 @@ export default function ProductsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="w-full py-12 px-10 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
           Products
