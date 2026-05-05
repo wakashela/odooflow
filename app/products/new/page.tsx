@@ -44,163 +44,149 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f7f5]">
-      <div className="fixed left-0 top-0 -z-10 h-full w-full">
+    <div className="min-h-screen bg-[#f8f7f5] text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-[#f8f7f5]" />
-        <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-gradient-to-br from-[#e8e4df] to-[#dcdad6] blur-[100px] opacity-50" />
+        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-200/40 to-purple-200/40 blur-[120px] mix-blend-multiply opacity-70 animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-emerald-200/40 to-teal-200/40 blur-[120px] mix-blend-multiply opacity-70 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
       </div>
 
-      <div className="relative mx-auto max-w-2xl px-5 py-10 md:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-3xl px-5 py-12 md:px-8 lg:px-12">
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#64748b] transition-colors hover:text-[#0f172a] mb-6"
+          className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-all hover:text-slate-900 mb-8 bg-white/50 hover:bg-white px-4 py-2 rounded-full border border-white/60 shadow-sm backdrop-blur-md"
         >
-          <ArrowLeft size={16} />
-          All products
+          <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
+          All Products
         </Link>
 
-        {/* Main Card - Quotation Style */}
-        <div className="rounded-2xl bg-[#fdfcfa] shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-[#e8e6e4]">
+        {/* Main Card */}
+        <div className="rounded-[2rem] bg-white/70 backdrop-blur-2xl shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white overflow-hidden transition-all duration-500 hover:shadow-[0_16px_60px_rgb(0,0,0,0.08)]">
           {/* Header Section */}
-          <div className="border-b border-[#f0ede9] p-5 md:p-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0f172a] text-white">
-                <Plus size={20} strokeWidth={2.5} />
+          <div className="relative overflow-hidden p-8 md:p-10 border-b border-slate-100/50">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent pointer-events-none" />
+            <div className="relative flex items-center gap-5">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20 ring-4 ring-white/50">
+                <Plus size={28} strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-[#0f172a]">New Product</h1>
-                <p className="text-xs text-[#64748b]">Create a new product record</p>
+                <h1 className="text-3xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>New Product</h1>
+                <p className="mt-1.5 text-sm font-medium text-slate-500">Add a new product or service</p>
               </div>
             </div>
           </div>
 
           {/* Form Section */}
-          <div className="p-5 md:p-6">
-            <div className="grid grid-cols-1 gap-x-12 gap-y-1 md:grid-cols-2">
+          <div className="p-8 md:p-10">
+            <div className="grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">
               {/* Left Column */}
-              <div className="space-y-0">
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Name</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">Product Name *</p>
-                    <input
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="mt-0.5 w-full bg-transparent text-base font-medium text-[#0f172a] placeholder-[#cbd5e1] outline-none focus:ring-0"
-                      placeholder="e.g., Laptop Pro 15"
-                    />
-                  </div>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Product Name *
+                  </label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-4 py-3 text-base font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
+                    placeholder="e.g., Laptop Pro 15"
+                  />
                 </div>
 
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">SKU</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">SKU / Default Code</p>
-                    <input
-                      value={defaultCode}
-                      onChange={(e) => setDefaultCode(e.target.value)}
-                      className="mt-0.5 w-full bg-transparent text-base font-medium text-[#0f172a] placeholder-[#cbd5e1] outline-none focus:ring-0"
-                      placeholder="e.g., LP-1500-BLK"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-3.5">SKU / Default Code</label>
+                  <input
+                    value={defaultCode}
+                    onChange={(e) => setDefaultCode(e.target.value)}
+                    className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-4 py-3 text-base font-medium text-slate-900 placeholder-slate-400 outline-none transition-all duration-300 font-mono"
+                    placeholder="e.g., LP-1500-BLK"
+                  />
                 </div>
 
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Desc</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">Description</p>
-                    <textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="mt-0.5 w-full resize-none bg-transparent text-base font-medium text-[#0f172a] placeholder-[#cbd5e1] outline-none focus:ring-0"
-                      placeholder="Brief product description..."
-                      rows={2}
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-3.5">Description</label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full resize-none bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl px-4 py-3 text-base font-medium text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
+                    placeholder="Brief product description..."
+                    rows={3}
+                  />
                 </div>
               </div>
 
               {/* Right Column */}
-              <div className="space-y-0">
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Rate</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">Rate (TZS)</p>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-3.5">Rate (TZS)</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">TZS</span>
                     <input
                       value={listPrice || ""}
                       onChange={(e) => setListPrice(Number(e.target.value) || 0)}
                       type="number"
-                      className="mt-0.5 w-full bg-transparent text-base font-medium text-[#0f172a] placeholder-[#cbd5e1] outline-none focus:ring-0"
-                      placeholder="0"
+                      className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-xl pl-14 pr-4 py-3 text-base font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
+                      placeholder="0.00"
                       min={0}
                       step={0.01}
                     />
                   </div>
                 </div>
 
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Sale</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">Available for Sale</p>
-                    <label className="mt-1 flex items-center gap-2">
+                <div className="space-y-4 pt-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-500 ml-3.5">Availability Settings</label>
+                  
+                  <label className="group relative flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-white/50 px-4 py-3 transition-all hover:bg-white hover:border-emerald-200">
+                    <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">Available for Sale</span>
+                    <div className="relative flex items-center">
                       <input
                         type="checkbox"
                         checked={saleOk}
                         onChange={(e) => setSaleOk(e.target.checked)}
-                        className="h-4 w-4 rounded border-[#e8e6e4] text-[#0f172a] focus:ring-[#0f172a]"
+                        className="peer sr-only"
                       />
-                      <span className="text-sm font-medium text-[#64748b]">Enable</span>
-                    </label>
-                  </div>
-                </div>
+                      <div className="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
+                      <div className="absolute left-[2px] top-[2px] h-5 w-5 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
+                    </div>
+                  </label>
 
-                <div className="group flex items-start gap-3 py-2">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f0ede9] text-[#0f172a] transition-colors group-hover:bg-[#e8e4df]">
-                    <span className="text-[10px] font-semibold uppercase tracking-[0.15em]">Buy</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#94a3b8]">Available for Purchase</p>
-                    <label className="mt-1 flex items-center gap-2">
+                  <label className="group relative flex cursor-pointer items-center justify-between rounded-xl border border-slate-200/60 bg-white/50 px-4 py-3 transition-all hover:bg-white hover:border-emerald-200">
+                    <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900">Available for Purchase</span>
+                    <div className="relative flex items-center">
                       <input
                         type="checkbox"
                         checked={purchaseOk}
                         onChange={(e) => setPurchaseOk(e.target.checked)}
-                        className="h-4 w-4 rounded border-[#e8e6e4] text-[#0f172a] focus:ring-[#0f172a]"
+                        className="peer sr-only"
                       />
-                      <span className="text-sm font-medium text-[#64748b]">Enable</span>
-                    </label>
-                  </div>
+                      <div className="h-6 w-11 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
+                      <div className="absolute left-[2px] top-[2px] h-5 w-5 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
+                    </div>
+                  </label>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 border-t border-[#f0ede9] px-5 py-4 md:px-6 md:py-5">
+          <div className="flex justify-end gap-4 bg-slate-50/50 p-6 md:px-10 border-t border-slate-100/50 backdrop-blur-sm">
             <Link href="/products">
-              <button className="rounded-lg border border-[#e8e4df] bg-white px-4 py-2 text-sm font-medium text-[#64748b] transition-all hover:bg-[#f8f7f5] active:scale-[0.97]">
+              <button className="rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow active:scale-[0.98]">
                 Cancel
               </button>
             </Link>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="flex items-center gap-1.5 rounded-lg bg-[#0f172a] px-4 py-2 text-sm font-medium text-white shadow-sm shadow-[#0f172a]/20 transition-all hover:bg-[#1e293b] disabled:opacity-50 active:scale-[0.97]"
+              className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 disabled:opacity-70 active:scale-[0.98]"
             >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               {saving ? (
-                <div className="h-4 w-4 animate-[spin_1s_linear_infinite] rounded-full border border-white/40 border-t-white" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
               ) : (
-                <Plus size={14} />
+                <Plus size={16} strokeWidth={3} className="transition-transform group-hover:rotate-90 duration-300" />
               )}
               <span>Create Product</span>
             </button>
