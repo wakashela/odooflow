@@ -1,35 +1,30 @@
 "use client";
 
+import { useCallback } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchProducts, updateProduct, createProduct } from "@/lib/odoo/partner";
+import { fetchProducts } from "@/lib/odoo/partner";
 import { formatCurrency } from "@/lib/utils";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
 import type { ProductProduct } from "@/types/odoo";
-import { Search, Plus, Edit2, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
+
+type ProductFilter = "all" | "sale" | "purchase" | "both";
 
 export default function ProductsPage() {
-  const { session } = useAuthStore();
   const router = useRouter();
+  const { session } = useAuthStore();
   const [products, setProducts] = useState<ProductProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editCode, setEditCode] = useState("");
-  const [editPrice, setEditPrice] = useState(0);
-  const [editSaleOk, setEditSaleOk] = useState(true);
-  const [savingId, setSavingId] = useState<number | null>(null);
+  const [filter, setFilter] = useState<ProductFilter>("all");
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
-  useEffect(() => {
-    if (session) loadProducts();
-  }, [session]);
-
-  async function loadProducts() {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await fetchProducts();
@@ -39,92 +34,92 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  function startEdit(p: ProductProduct) {
-    setEditingId(p.id);
-    setEditName(p.name);
-    setEditCode(p.default_code || "");
-    setEditPrice(p.list_price);
-    setEditSaleOk(p.sale_ok);
-  }
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setCurrentPage(1);
+  };
 
-  async function saveEdit() {
-    if (editingId === null || !editName.trim()) return;
-    setSavingId(editingId);
-    try {
-      await updateProduct(editingId, {
-        name: editName.trim(),
-        default_code: editCode.trim() || undefined,
-        list_price: editPrice,
-        sale_ok: editSaleOk,
-      });
-      await loadProducts();
-      setEditingId(null);
-    } catch (err) {
-      alert(`Failed to update product: ${(err as Error).message}`);
-    } finally {
-      setSavingId(null);
+  const handleFilterChange = (newFilter: ProductFilter) => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const pagedProducts = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filter]);
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === pagedProducts.length && pagedProducts.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pagedProducts.map((p) => p.id)));
     }
-  }
+  };
 
-  function cancelEdit() {
-    setEditingId(null);
-  }
+  const toggleSelect = (id: number) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedIds(newSet);
+  };
 
-  async function handleCreateQuick() {
-    try {
-      const name = `New Product ${Date.now()}`;
-      const id = await createProduct({
-        name,
-        default_code: `TMP-${Date.now()}`,
-        list_price: 0,
-        sale_ok: true,
-        purchase_ok: false,
-      });
-      router.push(`/products/${id}`);
-    } catch (err) {
-      alert(`Failed to create product: ${(err as Error).message}`);
-    }
-  }
-
-  const filtered = products.filter((p) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      p.name.toLowerCase().includes(q) ||
-      (p.default_code && p.default_code.toLowerCase().includes(q))
-    );
-  });
+  const tabs = [
+    { key: "all" as ProductFilter, label: "All", count: products.length },
+    { key: "sale" as ProductFilter, label: "Sale", count: saleCount },
+    { key: "purchase" as ProductFilter, label: "Purchase", count: purchaseCount },
+    { key: "both" as ProductFilter, label: "Both", count: bothCount },
+  ];
 
   return (
-    <div className="w-full py-12 px-10 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="w-full px-8 space-y-2">
+      <div className="h-[64px] flex items-center justify-between">
         <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
           Products
         </h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCreateQuick}>
-            <Plus size={14} />
-            Quick Create
+        <Link href="/products/new">
+          <Button size="md">
+            <Plus size={16} />
+            New Product
           </Button>
-          <Link href="/products/new">
-            <Button>New Product</Button>
-          </Link>
-        </div>
+        </Link>
+      </div>
+
+      <div className="flex gap-3">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => handleFilterChange(tab.key)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              filter === tab.key
+                ? "bg-[var(--color-primary)] text-white"
+                : "bg-[var(--color-border-light)] text-[var(--color-text-muted)] hover:bg-[var(--color-border)]"
+            }`}
+          >
+            {tab.label} ({tab.count})
+          </button>
+        ))}
       </div>
 
       <div className="relative">
         <Search
-          size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-light)]"
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-muted)]"
         />
         <input
           type="text"
           placeholder="Search by name or SKU..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-[var(--color-border)] bg-white py-2.5 pl-10 pr-4 text-sm placeholder:text-[var(--color-text-light)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20"
+          onChange={handleSearchChange}
+          className="w-full h-[40px] rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] pl-12 pr-4 text-[14px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-all"
         />
       </div>
 
@@ -133,97 +128,130 @@ export default function ProductsPage() {
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
         </div>
       ) : (
-        <div className="space-y-2">
-          {filtered.map((p) => (
-            <div key={p.id} className="hover:shadow-md transition-shadow mb-2">
-              <Card padding="none" className="hover:shadow-md transition-shadow">
-                {editingId === p.id ? (
-                  <div className="flex items-center gap-3 px-6 py-4">
-                    <div className="flex-1 grid grid-cols-2 gap-3">
-                      <Input
-                        value={editName}
-                        onChange={(e) => setEditName(e.target.value)}
-                        placeholder="Product name"
+        <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[var(--color-surface-soft)] border-b border-[var(--color-hairline)]">
+                  <th className="px-4 py-1.5 w-12 text-center">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded border-[var(--color-hairline)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                      checked={selectedIds.size === pagedProducts.length && pagedProducts.length > 0}
+                      onChange={toggleSelectAll}
+                    />
+                  </th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">SKU</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider w-[35%]">Name</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Category</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-1.5 text-xs font-semibold text-[var(--color-muted)] uppercase tracking-wider text-right">Price</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--color-hairline)]">
+                {pagedProducts.map((p) => (
+                  <tr
+                    key={p.id}
+                    onClick={() => router.push(`/products/${p.id}`)}
+                    className="hover:bg-[var(--color-surface-soft)] transition-colors group cursor-pointer"
+                  >
+                    <td className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded border-[var(--color-hairline)] text-[var(--color-primary)] focus:ring-[var(--color-primary)] cursor-pointer"
+                        checked={selectedIds.has(p.id)}
+                        onChange={() => toggleSelect(p.id)}
                       />
-                      <Input
-                        value={editCode}
-                        onChange={(e) => setEditCode(e.target.value)}
-                        placeholder="SKU / Code"
-                      />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Input
-                        type="number"
-                        value={editPrice || ""}
-                        onChange={(e) => setEditPrice(Number(e.target.value) || 0)}
-                        placeholder="Rate"
-                        className="w-28"
-                      />
-                      <label className="flex items-center gap-1.5 text-sm">
-                        <input
-                          type="checkbox"
-                          checked={editSaleOk}
-                          onChange={(e) => setEditSaleOk(e.target.checked)}
-                          className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                        />
-                        Sale
-                      </label>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={saveEdit}
-                          disabled={savingId === p.id}
-                          className="p-1.5 rounded text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] disabled:opacity-50"
-                          title="Save"
-                        >
-                          <Check size={16} />
-                        </button>
-                        <button
-                          onClick={cancelEdit}
-                          className="p-1.5 rounded text-[var(--color-text-light)] hover:bg-[var(--color-border-light)]"
-                          title="Cancel"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <Link href={`/products/${p.id}`} className="flex items-center justify-between px-6 py-4">
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
-                        {p.name}
-                      </p>
-                      <p className="text-xs text-[var(--color-text-muted)]">{p.default_code || "-"}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-base font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
-                          {formatCurrency(p.list_price)}
-                        </p>
-                        <p className="text-xs text-[var(--color-text-muted)]">
-                          {p.sale_ok ? "Sale" : p.purchase_ok ? "Purchase" : ""}
-                        </p>
-                      </div>
-                       <button
-                         onClick={(e) => {
-                           e.preventDefault();
-                           e.stopPropagation();
-                           startEdit(p);
-                         }}
-                         className="p-1.5 rounded text-[var(--color-text-muted)] hover:text-[var(--color-primary)] hover:bg-[var(--color-border-light)] transition-colors"
-                         title="Edit"
-                       >
-                         <Edit2 size={14} />
-                       </button>
-                    </div>
-                  </Link>
-                )}
-              </Card>
-            </div>
-          ))}
+                    </td>
+                    <td className="px-4 py-2 font-semibold text-[var(--color-ink)]">{p.default_code || "-"}</td>
+                    <td className="px-4 py-2 text-[var(--color-ink)]">{p.name}</td>
+                    <td className="px-4 py-2 text-[var(--color-muted)] text-sm">{p.categ_id?.[1] || "-"}</td>
+                    <td className="px-4 py-2">
+                      <span
+                        className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${
+                          p.sale_ok && p.purchase_ok
+                            ? "bg-purple-50 text-purple-700"
+                            : p.sale_ok
+                            ? "bg-blue-50 text-blue-700"
+                            : p.purchase_ok
+                            ? "bg-orange-50 text-orange-700"
+                            : "bg-gray-50 text-gray-500"
+                        }`}
+                      >
+                        {p.sale_ok && p.purchase_ok
+                          ? "Both"
+                          : p.sale_ok
+                          ? "Sale"
+                          : p.purchase_ok
+                          ? "Purchase"
+                          : "-"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                      <Link
+                        href={`/products/${p.id}`}
+                        className="font-bold text-[var(--color-ink)] hover:text-[var(--color-primary)] transition-colors"
+                      >
+                        {formatCurrency(p.list_price)}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-[var(--color-surface-soft)] border-t border-[var(--color-hairline)]">
+                <tr>
+                  <td colSpan={5} className="px-4 py-1.5 text-right text-sm font-semibold text-[var(--color-muted)] uppercase tracking-wider">
+                    Total Products:
+                  </td>
+                  <td className="px-4 py-1.5 text-right font-bold text-[14px] text-[var(--color-ink)]">
+                    {filtered.length}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
           {filtered.length === 0 && (
-            <Card className="py-12 text-center text-[var(--color-text-muted)]">No products found</Card>
+            <div className="py-12 text-center text-[var(--color-muted)]">
+              No products found
+            </div>
           )}
+        </div>
+      )}
+
+      {!loading && filtered.length > 0 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-sm text-[var(--color-muted)]">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length}
+          </p>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`min-w-[36px] h-[36px] rounded-lg text-sm font-medium transition-colors ${
+                  page === currentPage
+                    ? "bg-[var(--color-primary)] text-white"
+                    : "text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)]"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg text-[var(--color-muted)] hover:bg-[var(--color-surface-soft)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       )}
     </div>
