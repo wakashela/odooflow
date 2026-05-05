@@ -12,15 +12,15 @@ function InfoRow({ icon: Icon, label, value, editable, onChange, animateIn, comp
   const isBoolean = typeof value === "boolean";
   const isNumber = typeof value === "number";
   return (
-    <div className={`group flex items-start gap-4 ${compact ? 'py-3' : 'py-4 border-b border-slate-100/50 last:border-b-0'} ${animateIn ? 'animate-fadeSlideUp opacity-0' : 'opacity-100'}`} style={{ animationDelay: animateIn ? '0.05s' : '' }}>
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100/80 text-slate-500 transition-all duration-300 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:scale-110">
-        <Icon size={18} strokeWidth={2} />
+    <div className={`group flex items-start gap-3 py-2 border-b border-slate-100/50 last:border-b-0 ${animateIn ? 'animate-fadeSlideUp opacity-0' : 'opacity-100'}`} style={{ animationDelay: animateIn ? '0.05s' : '' }}>
+      <div className="flex h-8 w-8 mt-0.5 shrink-0 items-center justify-center rounded-lg bg-slate-100/80 text-slate-500 transition-all duration-300 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:scale-110">
+        <Icon size={16} strokeWidth={2} />
       </div>
-      <div className="flex-1 min-w-0 pt-0.5">
-        <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">{label}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</p>
         {editable ? (
           isBoolean ? (
-            <label className="group/toggle relative flex cursor-pointer items-center justify-between rounded-lg border border-slate-200/60 bg-white/50 px-3 py-2 transition-all hover:bg-white hover:border-emerald-200 mt-1">
+            <label className="group/toggle relative flex cursor-pointer items-center justify-between rounded-lg border border-slate-200/60 bg-white/50 px-2.5 py-1.5 transition-all hover:bg-white hover:border-emerald-200 mt-1">
               <span className="text-sm font-semibold text-slate-700 group-hover/toggle:text-slate-900">Enabled</span>
               <div className="relative flex items-center">
                 <input
@@ -29,8 +29,8 @@ function InfoRow({ icon: Icon, label, value, editable, onChange, animateIn, comp
                   onChange={(e) => onChange?.(e.target.checked)}
                   className="peer sr-only"
                 />
-                <div className="h-5 w-9 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
-                <div className="absolute left-[2px] top-[2px] h-4 w-4 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
+                <div className="h-4 w-7 rounded-full bg-slate-200 transition-colors peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-emerald-500/20 peer-checked:bg-emerald-600"></div>
+                <div className="absolute left-[2px] top-[2px] h-3 w-3 rounded-full border border-slate-300 bg-white transition-transform peer-checked:translate-x-full peer-checked:border-white"></div>
               </div>
             </label>
           ) : (
@@ -38,17 +38,17 @@ function InfoRow({ icon: Icon, label, value, editable, onChange, animateIn, comp
               value={value as string | number}
               onChange={(e) => onChange?.(isNumber ? Number(e.target.value) || 0 : e.target.value)}
               type={isNumber ? 'number' : 'text'}
-              className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300"
+              className="w-full bg-white/50 border border-slate-200/60 focus:bg-white focus:border-emerald-500/50 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-lg px-2.5 py-1 text-sm font-semibold text-slate-900 placeholder-slate-400 outline-none transition-all duration-300 mt-0.5"
               placeholder={`Enter ${label.toLowerCase()}`}
             />
           )
         ) : (
-          <p className="text-base font-semibold text-slate-900">
+          <p className="text-sm font-semibold text-slate-900">
             {typeof value === 'boolean' ? (
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${value ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${value ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                 {value ? 'Yes' : 'No'}
               </span>
-            ) : isNumber ? formatCurrency(value as number) : value || <span className="text-slate-300 font-normal italic">Not provided</span>}
+            ) : isNumber ? formatCurrency(value as number) : value || <span className="text-slate-300 font-normal italic text-xs">Not provided</span>}
           </p>
         )}
       </div>
@@ -134,40 +134,40 @@ export default function ProductDetailPage() {
         <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-cyan-200/40 to-blue-200/40 blur-[120px] mix-blend-multiply opacity-70 animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-3xl px-5 py-12 md:px-8 lg:px-12">
+      <div className="relative z-10 mx-auto max-w-3xl px-5 py-6 md:px-8 lg:px-12">
         <Link
           href="/products"
-          className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-all hover:text-slate-900 mb-8 bg-white/50 hover:bg-white px-4 py-2 rounded-full border border-white/60 shadow-sm backdrop-blur-md"
+          className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition-all hover:text-slate-900 mb-4 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-white/60 shadow-sm backdrop-blur-md"
         >
           <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
           All Products
         </Link>
 
         {/* Main Card */}
-        <div className="rounded-[2rem] bg-white/70 backdrop-blur-2xl shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white overflow-hidden transition-all duration-500 hover:shadow-[0_16px_60px_rgb(0,0,0,0.08)]">
+        <div className="rounded-[1.5rem] bg-white/70 backdrop-blur-2xl shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-white overflow-hidden transition-all duration-500 hover:shadow-[0_16px_60px_rgb(0,0,0,0.08)]">
           {/* Header Section */}
-          <div className="relative overflow-hidden p-8 md:p-10 border-b border-slate-100/50">
+          <div className="relative overflow-hidden p-5 md:p-6 border-b border-slate-100/50">
             <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent pointer-events-none" />
-            <div className="relative flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-              <div className="flex items-center sm:items-end gap-5">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 text-2xl font-bold text-white shadow-xl shadow-slate-900/20 ring-4 ring-white/50">
+            <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 text-xl font-bold text-white shadow-lg shadow-slate-900/20 ring-4 ring-white/50">
                   {initials}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>{product.name}</h1>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'var(--font-display)' }}>{product.name}</h1>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     {product.default_code && (
-                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-mono font-medium text-slate-600 border border-slate-200/60">
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-mono font-medium text-slate-600 border border-slate-200/60">
                         {product.default_code}
                       </span>
                     )}
                     {product.sale_ok && (
-                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-100/60">
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-100/60">
                         For Sale
                       </span>
                     )}
                     {product.purchase_ok && (
-                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 border border-amber-100/60">
+                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-100/60">
                         Purchasable
                       </span>
                     )}
@@ -175,15 +175,14 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {!editing ? (
                   <button
                     onClick={() => setEditing(true)}
-                    className="flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 active:scale-[0.98]"
+                    className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/30 active:scale-[0.98]"
                   >
-                    <Edit2 size={16} />
-                    <span className="hidden sm:inline">Edit Product</span>
-                    <span className="sm:hidden">Edit</span>
+                    <Edit2 size={14} />
+                    <span className="hidden sm:inline">Edit</span>
                   </button>
                 ) : (
                   <div className="flex gap-2">
@@ -192,24 +191,23 @@ export default function ProductDetailPage() {
                         setEditing(false);
                         load();
                       }}
-                      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow active:scale-[0.98]"
+                      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-slate-600 shadow-sm transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow active:scale-[0.98]"
                     >
-                      <X size={16} />
+                      <X size={14} />
                       <span className="hidden sm:inline">Cancel</span>
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-xl hover:shadow-slate-900/30 disabled:opacity-70 active:scale-[0.98]"
+                      className="group relative flex items-center gap-2 overflow-hidden rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white shadow-md shadow-slate-900/20 transition-all hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-900/30 disabled:opacity-70 active:scale-[0.98]"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                       {saving ? (
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />
                       ) : (
-                        <Check size={16} strokeWidth={3} className="transition-transform group-hover:scale-110 duration-300" />
+                        <Check size={14} strokeWidth={3} className="transition-transform group-hover:scale-110 duration-300" />
                       )}
-                      <span className="hidden sm:inline">Save Changes</span>
-                      <span className="sm:hidden">Save</span>
+                      <span className="hidden sm:inline">Save</span>
                     </button>
                   </div>
                 )}
@@ -218,8 +216,8 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Info Section */}
-          <div className="p-8 md:p-10">
-            <div className="grid grid-cols-1 gap-x-12 gap-y-2 md:grid-cols-2">
+          <div className="p-5 md:p-6">
+            <div className="grid grid-cols-1 gap-x-8 gap-y-0 md:grid-cols-2">
               <div className="space-y-0">
                 <InfoRow
                   icon={Tag}
@@ -273,8 +271,8 @@ export default function ProductDetailPage() {
             </div>
 
             {editing && (
-              <div className="mt-8 rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-4 text-center animate-fadeSlideUp">
-                <p className="text-sm font-semibold text-emerald-700">You are currently editing this product</p>
+              <div className="mt-4 rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-3 text-center animate-fadeSlideUp">
+                <p className="text-xs font-semibold text-emerald-700">You are currently editing this product</p>
               </div>
             )}
           </div>
