@@ -46,6 +46,7 @@ export async function GET(
 
   try {
     const orderId = Number(id);
+    const copyParam = req.nextUrl.searchParams.get("copy") as "original" | "duplicate" | null;
 
     const [orders, lines] = await Promise.all([
       odooServerCall<Record<string, unknown>[]>(
@@ -57,6 +58,7 @@ export async function GET(
           fields: [
             "name", "partner_id", "date_order", "validity_date",
             "amount_untaxed", "amount_tax", "amount_total", "note",
+            "payment_term_id",
           ],
           limit: 1,
         }
@@ -89,6 +91,10 @@ export async function GET(
       subtotal: (l.price_subtotal as number) || 0,
     }));
 
+    const paymentTermId = order.payment_term_id as [number, string] | false;
+    const paymentTerms = paymentTermId ? paymentTermId[1] : undefined;
+    const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
+
     const doc = (
       <InvoicePDF
         documentName={`PRO-${order.name as string}`}
@@ -101,6 +107,8 @@ export async function GET(
         amountTax={order.amount_tax as number}
         amountTotal={order.amount_total as number}
         notes={order.note as string | undefined}
+        paymentTerms={paymentTerms}
+        copyType={copyType}
       />
     );
 

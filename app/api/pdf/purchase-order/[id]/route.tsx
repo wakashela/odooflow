@@ -45,6 +45,7 @@ export async function GET(
 
   try {
     const poId = Number(id);
+    const copyParam = req.nextUrl.searchParams.get("copy") as "original" | "duplicate" | null;
 
     const [orders, lines] = await Promise.all([
       odooServerCall<Record<string, unknown>[]>(
@@ -88,6 +89,8 @@ export async function GET(
       subtotal: (l.price_subtotal as number) || 0,
     }));
 
+    const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
+
     const doc = (
       <PurchaseOrderPDF
         documentName={order.name as string}
@@ -100,6 +103,7 @@ export async function GET(
         amountTax={order.amount_tax as number}
         amountTotal={order.amount_total as number}
         notes={order.notes as string | undefined}
+        copyType={copyType}
       />
     );
 

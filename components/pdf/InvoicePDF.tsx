@@ -18,6 +18,8 @@ interface InvoicePDFProps {
   origin?: string;
   paymentState?: string;
   notes?: string;
+  paymentTerms?: string;
+  copyType?: "original" | "duplicate";
 }
 
 export function InvoicePDF({
@@ -34,6 +36,8 @@ export function InvoicePDF({
   origin,
   paymentState,
   notes,
+  paymentTerms,
+  copyType,
 }: InvoicePDFProps) {
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);
   const discount = lines.reduce((s, l) => s + (l.quantity * l.unitPrice - l.subtotal), 0);
@@ -43,6 +47,11 @@ export function InvoicePDF({
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
+        {copyType && (
+          <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
+            <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
+          </View>
+        )}
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
@@ -78,10 +87,13 @@ export function InvoicePDF({
             {origin && (
               <Text style={pdfStyles.infoSubValue}>Origin: {origin}</Text>
             )}
-            {paymentState && !isProforma && (
-              <Text style={pdfStyles.infoSubValue}>Payment: {paymentState}</Text>
-            )}
-          </View>
+{paymentState && !isProforma && (
+          <Text style={pdfStyles.infoSubValue}>Payment: {paymentState}</Text>
+        )}
+        {paymentTerms && (
+          <Text style={pdfStyles.infoSubValue}>Payment Terms: {paymentTerms}</Text>
+        )}
+        </View>
         </View>
 
         {isProforma && (

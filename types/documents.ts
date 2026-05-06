@@ -12,7 +12,7 @@ export type DocumentState =
   | "assigned"
   | "waiting";
 
-export type DocumentType = "quotation" | "proforma" | "purchase_order" | "invoice" | "delivery";
+export type DocumentType = "quotation" | "proforma" | "purchase_order" | "invoice" | "delivery" | "packing_list";
 
 export interface DocumentListItem {
   id: number;
@@ -69,6 +69,7 @@ export const WORKFLOW_ORDER: DocumentType[] = [
   "purchase_order",
   "invoice",
   "delivery",
+  "packing_list",
 ];
 
 export const WORKFLOW_LABELS: Record<DocumentType, string> = {
@@ -77,4 +78,5 @@ export const WORKFLOW_LABELS: Record<DocumentType, string> = {
   purchase_order: "Purchase Order",
   invoice: "Tax Invoice",
   delivery: "Delivery Note",
+  packing_list: "Packing List",
 };

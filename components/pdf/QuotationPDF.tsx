@@ -21,6 +21,8 @@ interface QuotationPDFProps {
   deliveryTime?: string;
   shipVia?: string;
   notes?: string;
+  paymentTerms?: string;
+  copyType?: "original" | "duplicate";
 }
 
 export function QuotationPDF({
@@ -38,6 +40,8 @@ export function QuotationPDF({
   deliveryTime,
   shipVia,
   notes,
+  paymentTerms,
+  copyType,
 }: QuotationPDFProps) {
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);
   const discount = lines.reduce((s, l) => s + (l.quantity * l.unitPrice - l.subtotal), 0);
@@ -46,6 +50,11 @@ export function QuotationPDF({
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
+        {copyType && (
+          <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
+            <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
+          </View>
+        )}
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
@@ -75,10 +84,13 @@ export function QuotationPDF({
             <Text style={pdfStyles.infoLabel}>Document Details</Text>
             <Text style={pdfStyles.infoValue}>{documentName}</Text>
             <Text style={pdfStyles.infoSubValue}>Date: {date}</Text>
-            {expiryDate && (
-              <Text style={pdfStyles.infoSubValue}>Valid Until: {expiryDate}</Text>
-            )}
-          </View>
+{expiryDate && (
+          <Text style={pdfStyles.infoSubValue}>Valid Until: {expiryDate}</Text>
+        )}
+        {paymentTerms && (
+          <Text style={pdfStyles.infoSubValue}>Payment Terms: {paymentTerms}</Text>
+        )}
+        </View>
         </View>
 
         {(shipVia || trackingNo || deliveryTime) && (

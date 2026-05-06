@@ -102,6 +102,21 @@ export const pdfStyles = StyleSheet.create({
     marginBottom: 2,
   },
 
+  // Copy banner (original / duplicate)
+  copyBanner: {
+    width: "100%",
+    paddingVertical: 4,
+    paddingHorizontal: 16,
+    marginBottom: 4,
+  },
+  copyBannerText: {
+    fontSize: T.sm,
+    fontFamily: "Helvetica-Bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    textAlign: "center",
+  },
+
   // Document type badge
   docTypeBadge: {
     paddingHorizontal: 10,

@@ -22,6 +22,7 @@ export interface SaleOrder {
   user_id?: OdooRelation;
   activity_state?: string;
   client_order_ref?: string | false;
+  payment_term_id: OdooRelation | false;
 }
 
 export interface SaleOrderLine {
@@ -51,6 +52,7 @@ export interface AccountMove {
   payment_state?: "not_paid" | "in_payment" | "paid" | "partial" | "reversed";
   invoice_origin?: string;
   narration?: string;
+  invoice_payment_term_id: OdooRelation | false;
 }
 
 export interface AccountMoveLine {

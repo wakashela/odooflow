@@ -17,6 +17,7 @@ interface PurchaseOrderPDFProps {
   amountTax: number;
   amountTotal: number;
   notes?: string;
+  copyType?: "original" | "duplicate";
 }
 
 export function PurchaseOrderPDF({
@@ -30,6 +31,7 @@ export function PurchaseOrderPDF({
   amountTax,
   amountTotal,
   notes,
+  copyType,
 }: PurchaseOrderPDFProps) {
   const logoPath = `${process.cwd()}/public/logo.png`;
   const logoSrc = getLogoSrc();
@@ -37,6 +39,11 @@ export function PurchaseOrderPDF({
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
+        {copyType && (
+          <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
+            <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
+          </View>
+        )}
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}

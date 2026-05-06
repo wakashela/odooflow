@@ -6,6 +6,7 @@ const INVOICE_FIELDS = [
   "invoice_date", "invoice_date_due", "invoice_line_ids",
   "amount_untaxed", "amount_tax", "amount_total", "payment_state",
   "narration", "invoice_origin",
+  "invoice_payment_term_id",
 ];
 
 const LINE_FIELDS = [

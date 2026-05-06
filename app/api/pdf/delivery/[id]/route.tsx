@@ -45,6 +45,7 @@ export async function GET(
 
   try {
     const pickingId = Number(id);
+    const copyParam = req.nextUrl.searchParams.get("copy") as "original" | "duplicate" | null;
 
     const [pickings, moves] = await Promise.all([
       odooServerCall<Record<string, unknown>[]>(
@@ -84,6 +85,8 @@ export async function GET(
       uom: (m.product_uom as [number, string])?.[1] || "-",
     }));
 
+    const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
+
     const doc = (
       <DeliveryNotePDF
         documentName={picking.name as string}
@@ -92,6 +95,7 @@ export async function GET(
         dateDone={picking.date_done ? new Date(picking.date_done as string).toLocaleDateString("en-GB") : undefined}
         origin={picking.origin as string | undefined}
         moves={deliveryMoves}
+        copyType={copyType}
       />
     );
 

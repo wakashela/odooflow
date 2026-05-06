@@ -19,6 +19,7 @@ interface DeliveryNotePDFProps {
   dateDone?: string;
   origin?: string;
   moves: DeliveryMove[];
+  copyType?: "original" | "duplicate";
 }
 
 export function DeliveryNotePDF({
@@ -28,12 +29,18 @@ export function DeliveryNotePDF({
   dateDone,
   origin,
   moves,
+  copyType,
 }: DeliveryNotePDFProps) {
   const logoSrc = getLogoSrc();
 
   return (
     <Document>
       <Page size="A4" style={pdfStyles.page}>
+        {copyType && (
+          <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
+            <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
+          </View>
+        )}
         <View style={pdfStyles.header}>
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
