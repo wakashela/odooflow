@@ -1,6 +1,4 @@
 const TZS_FORMATTER = new Intl.NumberFormat("en-TZ", {
-  style: "currency",
-  currency: "TZS",
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 });

@@ -15,6 +15,7 @@ interface DeliveryMove {
 interface DeliveryNotePDFProps {
   documentName: string;
   partnerName: string;
+  partnerAddress?: string;
   scheduledDate: string;
   dateDone?: string;
   origin?: string;
@@ -22,9 +23,10 @@ interface DeliveryNotePDFProps {
   copyType?: "original" | "duplicate";
 }
 
-export function DeliveryNotePDF({
+export function DeliveryNotePDFPage({
   documentName,
   partnerName,
+  partnerAddress,
   scheduledDate,
   dateDone,
   origin,
@@ -34,8 +36,7 @@ export function DeliveryNotePDF({
   const logoSrc = getLogoSrc();
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
+    <Page size="A4" style={pdfStyles.page}>
         {copyType && (
           <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
             <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
@@ -62,6 +63,9 @@ export function DeliveryNotePDF({
           <View style={pdfStyles.infoCol}>
             <Text style={pdfStyles.infoLabel}>Deliver To</Text>
             <Text style={pdfStyles.infoValue}>{partnerName}</Text>
+            {partnerAddress && (
+              <Text style={pdfStyles.infoSubValue}>{partnerAddress}</Text>
+            )}
           </View>
           <View style={pdfStyles.infoCol}>
             <Text style={pdfStyles.infoLabel}>Document Details</Text>
@@ -123,6 +127,13 @@ export function DeliveryNotePDF({
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
+  );
+}
+
+export function DeliveryNotePDF(props: DeliveryNotePDFProps) {
+  return (
+    <Document>
+      <DeliveryNotePDFPage {...props} />
     </Document>
   );
 }

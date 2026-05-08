@@ -122,7 +122,11 @@ export interface ResPartner {
   email: string | false;
   phone: string | false;
   street: string | false;
+  street2: string | false;
   city: string | false;
+  state_id: OdooRelation | false;
+  zip: string | false;
+  country_id: OdooRelation | false;
   vat: string | false;
   is_company: boolean;
   customer_rank: number;

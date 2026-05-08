@@ -176,13 +176,13 @@ export default function CustomerDetailPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
         <div className="space-y-2">
-          <InfoRow icon={Mail} label="Email Address" value={customer.email || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, email: v as string }))} />
-          <InfoRow icon={MapPin} label="Street Address" value={customer.street || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, street: v as string }))} />
-          <InfoRow icon={Building2} label="City" value={customer.city || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, city: v as string }))} />
+          <InfoRow icon={Mail} label="Email Address" value={editForm.email ?? customer.email ?? ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, email: v as string }))} />
+          <InfoRow icon={MapPin} label="Street Address" value={editForm.street ?? customer.street ?? ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, street: v as string }))} />
+          <InfoRow icon={Building2} label="City" value={editForm.city ?? customer.city ?? ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, city: v as string }))} />
         </div>
         <div className="space-y-2">
-          <InfoRow icon={Phone} label="Phone Number" value={customer.phone || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, phone: v as string }))} />
-          <InfoRow icon={Building2} label="VAT Number" value={customer.vat || ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, vat: v as string }))} />
+          <InfoRow icon={Phone} label="Phone Number" value={editForm.phone ?? customer.phone ?? ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, phone: v as string }))} />
+          <InfoRow icon={Building2} label="VAT Number" value={editForm.vat ?? customer.vat ?? ""} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, vat: v as string }))} />
           <InfoRow icon={Building2} label="Is a Company" value={editForm.is_company ?? customer.is_company} editable={editing} onChange={(v) => setEditForm((p) => ({ ...p, is_company: v as boolean }))} />
         </div>
       </div>

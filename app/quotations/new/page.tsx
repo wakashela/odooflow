@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createQuotation } from "@/lib/odoo/sale";
-import { fetchCustomers, fetchProducts, searchPartners } from "@/lib/odoo/partner";
+import { fetchCustomers, fetchProducts, searchPartners, createCustomer, createProduct } from "@/lib/odoo/partner";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -201,6 +201,29 @@ export default function NewQuotationPage() {
                 ))}
               </div>
             )}
+            {customerQuery && customerSuggestions.length === 0 && !customerSearching && (
+              <div className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--color-border)] bg-white">
+                <button
+                  onMouseDown={async (e) => {
+                    e.preventDefault();
+                    try {
+                      const newId = await createCustomer({ name: customerQuery, customer_rank: 1 });
+                      setPartnerId(newId);
+                      setCustomerQuery(customerQuery);
+                      setCustomerSuggestions([]);
+                      const custs = await fetchCustomers();
+                      setCustomers(custs);
+                    } catch (err) {
+                      alert(`Failed to create customer: ${(err as Error).message}`);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium"
+                >
+                  <Plus size={14} className="inline mr-1" />
+                  Create &quot;{customerQuery}&quot; as new customer
+                </button>
+              </div>
+            )}
           </div>
           <Input
             label="Valid Until"
@@ -259,6 +282,28 @@ export default function NewQuotationPage() {
                           {p.default_code ? `${p.default_code} - ` : ""}{p.name} (TZS {p.list_price.toLocaleString()})
                         </button>
                       ))}
+                    </div>
+                  )}
+                  {pq && productMatches.length === 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--color-border)] bg-white">
+                      <button
+                        onMouseDown={async (e) => {
+                          e.preventDefault();
+                          try {
+                            const newId = await createProduct({ name: pq, type: "product", sale_ok: true, list_price: 0 });
+                            const prods = await fetchProducts();
+                            setProducts(prods);
+                            selectProduct(line.id, newId);
+                            setProductQueries((prev) => ({ ...prev, [line.id]: "" }));
+                          } catch (err) {
+                            alert(`Failed to create product: ${(err as Error).message}`);
+                          }
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-primary-light)] text-[var(--color-primary)] font-medium"
+                      >
+                        <Plus size={14} className="inline mr-1" />
+                        Create &quot;{pq}&quot; as new product
+                      </button>
                     </div>
                   )}
                 </div>

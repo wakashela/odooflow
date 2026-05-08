@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderToStream } from "@react-pdf/renderer";
-import { InvoicePDF } from "@/components/pdf/InvoicePDF";
+import { renderToStream, Document } from "@react-pdf/renderer";
+import { InvoicePDFPage } from "@/components/pdf/InvoicePDF";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
@@ -82,6 +82,28 @@ export async function GET(
     const invoice = invoices[0];
     const partnerId = invoice.partner_id as [number, string];
 
+    // Fetch partner address
+    const partners = await odooServerCall<Record<string, unknown>[]>(
+      sessionId,
+      "res.partner",
+      "search_read",
+      [[["id", "=", partnerId[0]]]],
+      { fields: ["street", "street2", "city", "state_id", "zip", "country_id"], limit: 1 }
+    );
+    const partner = partners[0];
+    const stateId = partner?.state_id as [number, string] | false;
+    const countryId = partner?.country_id as [number, string] | false;
+    const partnerAddress = partner
+      ? [
+          partner.street,
+          partner.street2,
+          partner.city,
+          stateId ? stateId[1] : undefined,
+          partner.zip,
+          countryId ? countryId[1] : undefined,
+        ].filter(Boolean).join(", ")
+      : undefined;
+
     const lineItems = lines.map((l) => ({
       id: l.id as number,
       description: (l.name as string) || "",
@@ -89,29 +111,63 @@ export async function GET(
       unitPrice: (l.price_unit as number) || 0,
       discount: (l.discount as number) || 0,
       subtotal: (l.price_subtotal as number) || 0,
+      partNumber: undefined as string | undefined,
     }));
+
+    // Fetch part numbers (default_code) for products in lines
+    const productIds = lines.map((l) => {
+      const p = l.product_id as [number, string] | false;
+      return Array.isArray(p) ? p[0] : undefined;
+    }).filter(Boolean) as number[];
+    let partNumbers: Record<number, string> = {};
+    if (productIds.length > 0) {
+      const prods = await odooServerCall<Record<string, unknown>[]>(
+        sessionId, "product.product", "search_read",
+        [[["id", "in", productIds]]],
+        { fields: ["id", "default_code"], limit: productIds.length }
+      );
+      for (const p of prods) {
+        if (p.default_code) partNumbers[p.id as number] = p.default_code as string;
+      }
+    }
+    for (const l of lines) {
+      const p = l.product_id as [number, string] | false;
+      const pid = Array.isArray(p) ? p[0] : undefined;
+      if (pid && partNumbers[pid]) {
+        const item = lineItems.find((i) => i.id === (l.id as number));
+        if (item) item.partNumber = partNumbers[pid];
+      }
+    }
 
     const paymentTermId = invoice.invoice_payment_term_id as [number, string] | false;
     const paymentTerms = paymentTermId ? paymentTermId[1] : undefined;
-    const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
 
-    const doc = (
-      <InvoicePDF
-        documentName={invoice.name as string}
-        documentType="Tax Invoice"
-        partnerName={partnerId[1]}
-        date={new Date(invoice.invoice_date as string).toLocaleDateString("en-GB")}
-        dueDate={invoice.invoice_date_due ? new Date(invoice.invoice_date_due as string).toLocaleDateString("en-GB") : undefined}
-        lines={lineItems}
-        amountUntaxed={invoice.amount_untaxed as number}
-        amountTax={invoice.amount_tax as number}
-        amountTotal={invoice.amount_total as number}
-        origin={invoice.invoice_origin as string | undefined}
-        paymentState={invoice.payment_state as string | undefined}
-        notes={invoice.narration as string | undefined}
-        paymentTerms={paymentTerms}
-        copyType={copyType}
-      />
+    const pageProps = {
+      documentName: invoice.name as string,
+      documentType: "Tax Invoice",
+      partnerName: partnerId[1],
+      partnerAddress,
+      date: new Date(invoice.invoice_date as string).toLocaleDateString("en-GB"),
+      dueDate: invoice.invoice_date_due ? new Date(invoice.invoice_date_due as string).toLocaleDateString("en-GB") : undefined,
+      lines: lineItems,
+      amountUntaxed: invoice.amount_untaxed as number,
+      amountTax: invoice.amount_tax as number,
+      amountTotal: invoice.amount_total as number,
+      origin: invoice.invoice_origin as string | undefined,
+      paymentState: invoice.payment_state as string | undefined,
+      notes: invoice.narration as string | undefined,
+      paymentTerms,
+    };
+
+    const doc = copyParam ? (
+      <Document>
+        <InvoicePDFPage {...pageProps} copyType={copyParam as "original" | "duplicate"} />
+      </Document>
+    ) : (
+      <Document>
+        <InvoicePDFPage {...pageProps} copyType="original" />
+        <InvoicePDFPage {...pageProps} copyType="duplicate" />
+      </Document>
     );
 
     const stream = await renderToStream(doc);

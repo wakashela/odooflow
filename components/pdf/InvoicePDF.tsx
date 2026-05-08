@@ -22,7 +22,7 @@ interface InvoicePDFProps {
   copyType?: "original" | "duplicate";
 }
 
-export function InvoicePDF({
+export function InvoicePDFPage({
   documentName,
   documentType,
   partnerName,
@@ -45,8 +45,7 @@ export function InvoicePDF({
   const logoSrc = getLogoSrc();
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
+    <Page size="A4" style={pdfStyles.page}>
         {copyType && (
           <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
             <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
@@ -108,6 +107,7 @@ export function InvoicePDF({
           <View style={pdfStyles.tableHeader}>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>#</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colDesc]}>Description</Text>
+            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPart]}>Part No.</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colQty]}>Qty</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Rate</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colAmount]}>Amount (TZS)</Text>
@@ -122,6 +122,7 @@ export function InvoicePDF({
             >
               <Text style={[pdfStyles.tableCell, pdfStyles.colNum]}>{idx + 1}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colDesc]}>{line.description}</Text>
+              <Text style={[pdfStyles.tableCell, pdfStyles.colPart]}>{line.partNumber || ""}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colQty]}>{line.quantity}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPrice]}>
                 {formatCurrency(line.unitPrice)}
@@ -185,6 +186,13 @@ export function InvoicePDF({
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
+  );
+}
+
+export function InvoicePDF(props: InvoicePDFProps) {
+  return (
+    <Document>
+      <InvoicePDFPage {...props} />
     </Document>
   );
 }

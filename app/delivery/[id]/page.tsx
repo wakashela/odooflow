@@ -87,7 +87,10 @@ export default function DeliveryDetailPage() {
     );
   }
 
-  const completedSteps: DocumentType[] = ["quotation", "proforma", "purchase_order", "invoice"];
+  const completedSteps: DocumentType[] = [
+    "quotation", "proforma", "purchase_order", "invoice",
+    ...(picking.state === "done" ? ["packing_list" as DocumentType] : []),
+  ];
 
   return (
     <div className="w-full py-12 px-10 space-y-6">
@@ -120,7 +123,13 @@ export default function DeliveryDetailPage() {
           <Link href={`/api/pdf/delivery/${id}`} target="_blank">
             <Button variant="outline">
               <Printer size={16} />
-              Print PDF
+              Delivery Note
+            </Button>
+          </Link>
+          <Link href={`/api/pdf/packing-list/${id}`} target="_blank">
+            <Button variant="outline">
+              <Printer size={16} />
+              Packing List
             </Button>
           </Link>
         </div>
@@ -150,6 +159,12 @@ export default function DeliveryDetailPage() {
                 </span>
               </Link>
             )}
+            <Link href={`/api/pdf/packing-list/${id}`} target="_blank">
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
+                <Printer size={14} />
+                Packing List PDF
+              </span>
+            </Link>
           </div>
         </Card>
       )}

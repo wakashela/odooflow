@@ -25,7 +25,7 @@ interface QuotationPDFProps {
   copyType?: "original" | "duplicate";
 }
 
-export function QuotationPDF({
+export function QuotationPDFPage({
   documentName,
   documentType,
   partnerName,
@@ -48,8 +48,7 @@ export function QuotationPDF({
   const logoSrc = getLogoSrc();
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
+    <Page size="A4" style={pdfStyles.page}>
         {copyType && (
           <View style={[pdfStyles.copyBanner, { backgroundColor: copyType === "original" ? "#00796B" : "#9E9E9E" }]}>
             <Text style={[pdfStyles.copyBannerText, { color: "#FFFFFF" }]}>{copyType === "original" ? "ORIGINAL" : "DUPLICATE"}</Text>
@@ -120,6 +119,7 @@ export function QuotationPDF({
           <View style={pdfStyles.tableHeader}>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>#</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colDesc]}>Description</Text>
+            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPart]}>Part No.</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colQty]}>Qty</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Rate</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colAmount]}>Amount (TZS)</Text>
@@ -134,6 +134,7 @@ export function QuotationPDF({
             >
               <Text style={[pdfStyles.tableCell, pdfStyles.colNum]}>{idx + 1}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colDesc]}>{line.description}</Text>
+              <Text style={[pdfStyles.tableCell, pdfStyles.colPart]}>{line.partNumber || ""}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colQty]}>{line.quantity}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPrice]}>
                 {formatCurrency(line.unitPrice)}
@@ -197,6 +198,13 @@ export function QuotationPDF({
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
+  );
+}
+
+export function QuotationPDF(props: QuotationPDFProps) {
+  return (
+    <Document>
+      <QuotationPDFPage {...props} />
     </Document>
   );
 }

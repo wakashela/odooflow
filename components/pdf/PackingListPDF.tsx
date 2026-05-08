@@ -13,6 +13,7 @@ interface DeliveryMove {
 interface PackingListPDFProps {
   documentName: string;
   partnerName: string;
+  partnerAddress?: string;
   scheduledDate: string;
   dateDone?: string;
   origin?: string;
@@ -22,9 +23,10 @@ interface PackingListPDFProps {
   copyType?: "original" | "duplicate";
 }
 
-export function PackingListPDF({
+export function PackingListPDFPage({
   documentName,
   partnerName,
+  partnerAddress,
   scheduledDate,
   dateDone,
   origin,
@@ -36,8 +38,7 @@ export function PackingListPDF({
   const logoSrc = getLogoSrc();
 
   return (
-    <Document>
-      <Page size="A4" style={pdfStyles.page}>
+    <Page size="A4" style={pdfStyles.page}>
         {copyType && (
           <View
             style={[
@@ -77,6 +78,9 @@ export function PackingListPDF({
           <View style={pdfStyles.infoCol}>
             <Text style={pdfStyles.infoLabel}>Ship To</Text>
             <Text style={pdfStyles.infoValue}>{partnerName}</Text>
+            {partnerAddress && (
+              <Text style={pdfStyles.infoSubValue}>{partnerAddress}</Text>
+            )}
           </View>
           <View style={pdfStyles.infoCol}>
             <Text style={pdfStyles.infoLabel}>Document Details</Text>
@@ -220,6 +224,13 @@ export function PackingListPDF({
           />
         </View>
       </Page>
+  );
+}
+
+export function PackingListPDF(props: PackingListPDFProps) {
+  return (
+    <Document>
+      <PackingListPDFPage {...props} />
     </Document>
   );
 }

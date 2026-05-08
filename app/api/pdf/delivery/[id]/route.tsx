@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderToStream } from "@react-pdf/renderer";
-import { DeliveryNotePDF } from "@/components/pdf/DeliveryNotePDF";
+import { renderToStream, Document } from "@react-pdf/renderer";
+import { DeliveryNotePDFPage } from "@/components/pdf/DeliveryNotePDF";
 
 const ODOO_URL = process.env.ODOO_URL!;
 
@@ -77,6 +77,28 @@ export async function GET(
     const picking = pickings[0];
     const partnerId = picking.partner_id as [number, string];
 
+    // Fetch partner address
+    const partners = await odooServerCall<Record<string, unknown>[]>(
+      sessionId,
+      "res.partner",
+      "search_read",
+      [[["id", "=", partnerId[0]]]],
+      { fields: ["street", "street2", "city", "state_id", "zip", "country_id"], limit: 1 }
+    );
+    const partner = partners[0];
+    const stateId = partner?.state_id as [number, string] | false;
+    const countryId = partner?.country_id as [number, string] | false;
+    const partnerAddress = partner
+      ? [
+          partner.street,
+          partner.street2,
+          partner.city,
+          stateId ? stateId[1] : undefined,
+          partner.zip,
+          countryId ? countryId[1] : undefined,
+        ].filter(Boolean).join(", ")
+      : undefined;
+
     const deliveryMoves = moves.map((m) => ({
       id: m.id as number,
       productName: (m.product_id as [number, string])?.[1] || (m.name as string) || "",
@@ -87,16 +109,25 @@ export async function GET(
 
     const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
 
-    const doc = (
-      <DeliveryNotePDF
-        documentName={picking.name as string}
-        partnerName={partnerId[1]}
-        scheduledDate={new Date(picking.scheduled_date as string).toLocaleDateString("en-GB")}
-        dateDone={picking.date_done ? new Date(picking.date_done as string).toLocaleDateString("en-GB") : undefined}
-        origin={picking.origin as string | undefined}
-        moves={deliveryMoves}
-        copyType={copyType}
-      />
+    const pageProps = {
+      documentName: picking.name as string,
+      partnerName: partnerId[1],
+      partnerAddress,
+      scheduledDate: new Date(picking.scheduled_date as string).toLocaleDateString("en-GB"),
+      dateDone: picking.date_done ? new Date(picking.date_done as string).toLocaleDateString("en-GB") : undefined,
+      origin: picking.origin as string | undefined,
+      moves: deliveryMoves,
+    };
+
+    const doc = copyType ? (
+      <Document>
+        <DeliveryNotePDFPage {...pageProps} copyType={copyType} />
+      </Document>
+    ) : (
+      <Document>
+        <DeliveryNotePDFPage {...pageProps} copyType="original" />
+        <DeliveryNotePDFPage {...pageProps} copyType="duplicate" />
+      </Document>
     );
 
     const stream = await renderToStream(doc);

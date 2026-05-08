@@ -28,6 +28,7 @@ export interface LineItem {
   id: number;
   productId?: number;
   productLabel?: string;
+  partNumber?: string;
   description: string;
   quantity: number;
   unitPrice: number;

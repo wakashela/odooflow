@@ -217,7 +217,8 @@ export const pdfStyles = StyleSheet.create({
   },
 
   // Columns
-  colDesc: { width: "42%" },
+  colDesc: { width: "32%" },
+  colPart: { width: "10%" },
   colActivity: { width: "15%" },
   colDate: { width: "12%" },
   colQty: { width: "8%", textAlign: "right" },

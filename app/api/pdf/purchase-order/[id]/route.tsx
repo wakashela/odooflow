@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { renderToStream } from "@react-pdf/renderer";
-import { PurchaseOrderPDF } from "@/components/pdf/PurchaseOrderPDF";
+import { renderToStream, Document } from "@react-pdf/renderer";
+import { PurchaseOrderPDFPage } from "@/components/pdf/PurchaseOrderPDF";
 
 const ODOO_URL = process.env.ODOO_URL!;
 
@@ -80,6 +80,28 @@ export async function GET(
     const order = orders[0];
     const partnerId = order.partner_id as [number, string];
 
+    // Fetch partner address
+    const partners = await odooServerCall<Record<string, unknown>[]>(
+      sessionId,
+      "res.partner",
+      "search_read",
+      [[["id", "=", partnerId[0]]]],
+      { fields: ["street", "street2", "city", "state_id", "zip", "country_id"], limit: 1 }
+    );
+    const partner = partners[0];
+    const stateId = partner?.state_id as [number, string] | false;
+    const countryId = partner?.country_id as [number, string] | false;
+    const partnerAddress = partner
+      ? [
+          partner.street,
+          partner.street2,
+          partner.city,
+          stateId ? stateId[1] : undefined,
+          partner.zip,
+          countryId ? countryId[1] : undefined,
+        ].filter(Boolean).join(", ")
+      : undefined;
+
     const lineItems = lines.map((l) => ({
       id: l.id as number,
       description: (l.name as string) || "",
@@ -87,24 +109,59 @@ export async function GET(
       unitPrice: (l.price_unit as number) || 0,
       discount: 0,
       subtotal: (l.price_subtotal as number) || 0,
+      partNumber: undefined as string | undefined,
     }));
+
+    // Fetch part numbers (default_code) for products in lines
+    const productIds = lines.map((l) => {
+      const p = l.product_id as [number, string] | false;
+      return Array.isArray(p) ? p[0] : undefined;
+    }).filter(Boolean) as number[];
+    let partNumbers: Record<number, string> = {};
+    if (productIds.length > 0) {
+      const prods = await odooServerCall<Record<string, unknown>[]>(
+        sessionId, "product.product", "search_read",
+        [[["id", "in", productIds]]],
+        { fields: ["id", "default_code"], limit: productIds.length }
+      );
+      for (const p of prods) {
+        if (p.default_code) partNumbers[p.id as number] = p.default_code as string;
+      }
+    }
+    for (const l of lines) {
+      const p = l.product_id as [number, string] | false;
+      const pid = Array.isArray(p) ? p[0] : undefined;
+      if (pid && partNumbers[pid]) {
+        const item = lineItems.find((i) => i.id === (l.id as number));
+        if (item) item.partNumber = partNumbers[pid];
+      }
+    }
 
     const copyType = copyParam === "original" || copyParam === "duplicate" ? copyParam : undefined;
 
-    const doc = (
-      <PurchaseOrderPDF
-        documentName={order.name as string}
-        partnerName={partnerId[1]}
-        date={new Date(order.date_order as string).toLocaleDateString("en-GB")}
-        plannedDate={order.date_planned ? new Date(order.date_planned as string).toLocaleDateString("en-GB") : undefined}
-        origin={order.origin as string | undefined}
-        lines={lineItems}
-        amountUntaxed={order.amount_untaxed as number}
-        amountTax={order.amount_tax as number}
-        amountTotal={order.amount_total as number}
-        notes={order.notes as string | undefined}
-        copyType={copyType}
-      />
+    const pageProps = {
+      documentName: order.name as string,
+      partnerName: partnerId[1],
+      partnerAddress,
+      date: new Date(order.date_order as string).toLocaleDateString("en-GB"),
+      plannedDate: order.date_planned ? new Date(order.date_planned as string).toLocaleDateString("en-GB") : undefined,
+      origin: order.origin as string | undefined,
+      lines: lineItems,
+      amountUntaxed: order.amount_untaxed as number,
+      amountTax: order.amount_tax as number,
+      amountTotal: order.amount_total as number,
+      notes: order.notes as string | undefined,
+    };
+
+    const doc = copyType ? (
+      <Document>
+        <PurchaseOrderPDFPage {...pageProps} copyType={copyType} />
+      </Document>
+    ) : (
+      <Document>
+        <PurchaseOrderPDFPage {...pageProps} copyType="original" />
+        <PurchaseOrderPDFPage {...pageProps} copyType="duplicate" />
+      </Document>
     );
 
     const stream = await renderToStream(doc);
