@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchInvoiceById, fetchInvoiceLines, postInvoice } from "@/lib/odoo/invoice";
 import { odooCall } from "@/lib/odoo/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -27,6 +28,7 @@ export default function InvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [originSoId, setOriginSoId] = useState<number | null>(null);
+  const [partnerAddress, setPartnerAddress] = useState("");
 
   const isDraft = invoice?.state === "draft";
 
@@ -39,6 +41,11 @@ export default function InvoiceDetailPage() {
       ]);
       setInvoice(inv);
       setRawLines(lines);
+
+      const partner = await fetchCustomerById(inv.partner_id[0]);
+      if (partner) {
+        setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
+      }
 
       if (inv.invoice_origin) {
         try {
@@ -89,16 +96,21 @@ export default function InvoiceDetailPage() {
     );
   }
 
-  const lineItems: LineItem[] = rawLines.map((l) => ({
-    id: l.id,
-    productId: l.product_id?.[0],
-    productLabel: l.product_id?.[1],
-    description: l.name,
-    quantity: l.quantity,
-    unitPrice: l.price_unit,
-    discount: l.discount,
-    subtotal: l.price_subtotal,
-  }));
+  const lineItems: LineItem[] = rawLines.map((l) => {
+    const label = l.product_id?.[1] || "";
+    const match = label.match(/^\\[(.*?)\\]/);
+    return {
+      id: l.id,
+      productId: l.product_id?.[0],
+      productLabel: label,
+      partNumber: match ? match[1] : "",
+      description: l.name,
+      quantity: l.quantity,
+      unitPrice: l.price_unit,
+      discount: l.discount,
+      subtotal: l.price_subtotal,
+    };
+  });
 
   const completedSteps: DocumentType[] = ["quotation", "proforma"];
 
@@ -115,8 +127,8 @@ export default function InvoiceDetailPage() {
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <Badge state={invoice.state} />
-              {invoice.payment_state && invoice.payment_state !== "not_paid" && (
-                <Badge state={invoice.payment_state === "paid" ? "done" : "waiting"} />
+              {invoice.payment_state && (
+                <Badge state={invoice.payment_state} />
               )}
             </div>
           </div>
@@ -169,6 +181,7 @@ export default function InvoiceDetailPage() {
         documentName={invoice.name}
         documentType="Tax Invoice"
         partnerName={invoice.partner_id[1]}
+        partnerAddress={partnerAddress}
         date={invoice.invoice_date}
         expiryDate={invoice.invoice_date_due}
         origin={invoice.invoice_origin}
@@ -187,7 +200,7 @@ export default function InvoiceDetailPage() {
           <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Notes
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{invoice.narration}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{invoice.narration?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
         </Card>
       )}
 

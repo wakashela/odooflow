@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOrderLine, deleteSaleOrderLine, addSaleOrderLine } from "@/lib/odoo/sale";
+import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOrderLine, deleteSaleOrderLine, addSaleOrderLine, updateQuotation } from "@/lib/odoo/sale";
 import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
 import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
-import { fetchProducts } from "@/lib/odoo/partner";
+import { fetchProducts, fetchCustomerById, searchPartners } from "@/lib/odoo/partner";
+import type { ResPartner } from "@/types/odoo";
 import { computeLineAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -22,6 +23,7 @@ import type { ProductProduct } from "@/types/odoo";
 import { ArrowLeft, CheckCircle, Printer, FileText, ExternalLink, ShoppingCart } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function QuotationDetailPage() {
   const params = useParams();
@@ -39,6 +41,12 @@ export default function QuotationDetailPage() {
   const [showAddLine, setShowAddLine] = useState(false);
   const [newProduct, setNewProduct] = useState(0);
   const [newQty, setNewQty] = useState(1);
+  const [partnerAddress, setPartnerAddress] = useState("");
+
+  const [showCustomerEditModal, setShowCustomerEditModal] = useState(false);
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [customerSuggestions, setCustomerSuggestions] = useState<ResPartner[]>([]);
+  const [customerSearching, setCustomerSearching] = useState(false);
 
   const isDraft = order?.state === "draft";
   const isConfirmed = order?.state === "sale";
@@ -50,10 +58,16 @@ export default function QuotationDetailPage() {
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
       ]);
-      const purchaseOrders = await fetchPurchaseOrdersByOrigin(so.name);
+      const [purchaseOrders, partner] = await Promise.all([
+        fetchPurchaseOrdersByOrigin(so.name),
+        fetchCustomerById(so.partner_id[0])
+      ]);
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
+      if (partner) {
+        setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
+      }
     } catch (err) {
       console.error("Failed to load quotation:", err);
     } finally {
@@ -66,16 +80,45 @@ export default function QuotationDetailPage() {
     fetchProducts().then(setProducts);
   }, [loadOrder]);
 
-  const lineItems: LineItem[] = rawLines.map((l) => ({
-    id: l.id,
-    productId: l.product_id?.[0],
-    productLabel: l.product_id?.[1],
-    description: l.name,
-    quantity: l.product_uom_qty,
-    unitPrice: l.price_unit,
-    discount: l.discount,
-    subtotal: l.price_subtotal,
-  }));
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(async () => {
+      if (!customerQuery.trim() || !showCustomerEditModal) {
+        setCustomerSuggestions([]);
+        return;
+      }
+      setCustomerSearching(true);
+      try {
+        const results = await searchPartners(customerQuery, 20);
+        if (!active) return;
+        setCustomerSuggestions(results);
+      } catch (err) {
+        console.error("Failed to search partners:", err);
+      } finally {
+        if (active) setCustomerSearching(false);
+      }
+    }, 250);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [customerQuery, showCustomerEditModal]);
+
+  const lineItems: LineItem[] = rawLines.map((l) => {
+    const label = l.product_id?.[1] || "";
+    const match = label.match(/^\\[(.*?)\\]/);
+    return {
+      id: l.id,
+      productId: l.product_id?.[0],
+      productLabel: label,
+      partNumber: match ? match[1] : "",
+      description: l.name,
+      quantity: l.product_uom_qty,
+      unitPrice: l.price_unit,
+      discount: l.discount,
+      subtotal: l.price_subtotal,
+    };
+  });
 
   async function handleConfirm() {
     if (!confirm("Confirm this quotation?\n\nThis action will lock line items and move the workflow to proforma so purchase order processing can begin.")) return;
@@ -183,11 +226,7 @@ export default function QuotationDetailPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
-      </div>
-    );
+    return <PageLoader message="Loading quotation…" />;
   }
 
   if (!order) {
@@ -305,8 +344,10 @@ export default function QuotationDetailPage() {
         documentName={order.name}
         documentType="Quotation"
         partnerName={order.partner_id[1]}
+        partnerAddress={partnerAddress}
         date={order.date_order}
         expiryDate={order.validity_date}
+        onEditCustomer={isDraft ? () => setShowCustomerEditModal(true) : undefined}
       />
 
       <LineItemsTable
@@ -328,7 +369,7 @@ export default function QuotationDetailPage() {
           <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Terms & Conditions
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
         </Card>
       )}
 
@@ -368,6 +409,46 @@ export default function QuotationDetailPage() {
             </Button>
             <Button onClick={handleAddLine}>Add</Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal open={showCustomerEditModal} onClose={() => setShowCustomerEditModal(false)} title="Change Customer">
+        <div className="flex flex-col gap-1.5 relative pb-40">
+          <Input
+            label="Search Customer"
+            value={customerQuery}
+            onChange={(e) => setCustomerQuery(e.target.value)}
+            placeholder="Type customer name..."
+            autoFocus
+          />
+          {customerQuery && customerSuggestions.length > 0 && (
+            <div className="absolute top-16 z-50 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white shadow-lg">
+              {customerSuggestions.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={async () => {
+                    try {
+                      await updateQuotation(id, { partner_id: c.id as unknown as [number, string] });
+                      setShowCustomerEditModal(false);
+                      setCustomerQuery("");
+                      await loadOrder();
+                    } catch (err) {
+                      alert(`Failed to update customer: ${(err as Error).message}`);
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-[var(--color-border-light)]"
+                >
+                  <div className="font-medium text-[var(--color-text)]">{c.name}</div>
+                  <div className="text-xs text-[var(--color-text-muted)]">{c.email || c.phone || c.city}</div>
+                </button>
+              ))}
+            </div>
+          )}
+          {customerQuery && customerSuggestions.length === 0 && !customerSearching && (
+            <div className="text-sm text-[var(--color-text-muted)] mt-2">
+              No matching customers found.
+            </div>
+          )}
         </div>
       </Modal>
     </div>

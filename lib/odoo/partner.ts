@@ -3,7 +3,7 @@ import type { ResPartner, ProductProduct } from "@/types/odoo";
 
 export async function fetchCustomers(limit = 100): Promise<ResPartner[]> {
   return odooCall<ResPartner[]>("res.partner", "search_read", [[ ["customer_rank", ">", 0] ]], {
-    fields: ["id", "name", "email", "phone", "street", "city", "vat", "is_company"],
+    fields: ["id", "name", "email", "phone", "street", "city", "vat", "x_tin", "is_company"],
     limit,
     order: "name",
   });
@@ -11,7 +11,7 @@ export async function fetchCustomers(limit = 100): Promise<ResPartner[]> {
 
 export async function fetchVendors(limit = 100): Promise<ResPartner[]> {
   return odooCall<ResPartner[]>("res.partner", "search_read", [[ ["supplier_rank", ">", 0] ]], {
-    fields: ["id", "name", "email", "phone", "street", "city", "vat", "is_company"],
+    fields: ["id", "name", "email", "phone", "street", "city", "vat", "x_tin", "is_company"],
     limit,
     order: "name",
   });
@@ -35,7 +35,7 @@ export async function searchPartners(query: string, limit = 20): Promise<ResPart
 
 export async function fetchCustomerById(id: number): Promise<ResPartner | null> {
   const res = await odooCall<ResPartner[]>("res.partner", "search_read", [[ ["id", "=", id] ]], {
-    fields: ["id", "name", "email", "phone", "street", "city", "vat", "is_company"],
+    fields: ["id", "name", "email", "phone", "street", "city", "vat", "x_tin", "is_company"],
     limit: 1,
   });
   return res && res.length ? res[0] : null;
@@ -50,16 +50,17 @@ export async function fetchProductById(id: number): Promise<ProductProduct | nul
 }
 
 export async function createCustomer(data: Partial<ResPartner>): Promise<number> {
-  return odooCall<number>("res.partner", "create", [[{
+  return odooCall<number>("res.partner", "create", [{
     name: data.name,
     email: data.email,
     phone: data.phone,
     street: data.street,
     city: data.city,
     vat: data.vat,
+    x_tin: data.x_tin,
     is_company: data.is_company,
     customer_rank: 1,
-  }]]);
+  }]);
 }
 
 export async function updateCustomer(id: number, data: Partial<ResPartner>): Promise<boolean> {
@@ -70,22 +71,23 @@ export async function updateCustomer(id: number, data: Partial<ResPartner>): Pro
     street: data.street,
     city: data.city,
     vat: data.vat,
+    x_tin: data.x_tin,
     is_company: data.is_company,
   }]);
   return true;
 }
 
 export async function createProduct(data: Partial<ProductProduct & { description_sale?: string }>): Promise<number> {
-  return odooCall<number>("product.product", "create", [[{
+  return odooCall<number>("product.product", "create", [{
     name: data.name,
     default_code: data.default_code,
-    type: data.type || "product",
+    type: data.type || "consu",
     list_price: data.list_price || 0,
     standard_price: data.standard_price || 0,
     sale_ok: data.sale_ok ?? true,
     purchase_ok: data.purchase_ok ?? false,
     description_sale: data.description_sale,
-  }]]);
+  }]);
 }
 
 export async function updateProduct(id: number, data: Partial<ProductProduct & { description_sale?: string }>): Promise<boolean> {

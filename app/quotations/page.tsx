@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import type { SaleOrder } from "@/types/odoo";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function QuotationsPage() {
   const router = useRouter();
@@ -129,9 +130,7 @@ export default function QuotationsPage() {
       </div>
 
       {loading ? (
-        <div className="flex h-32 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
-        </div>
+        <PageLoader message="Loading quotations…" className="h-32" />
       ) : (
         <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -190,7 +189,7 @@ export default function QuotationsPage() {
                     Total:
                   </td>
                   <td className="px-4 py-1.5 text-right font-bold text-[14px] text-[var(--color-ink)]">
-                    {formatCurrency(filtered.reduce((sum, o) => sum + o.amount_total, 0))}
+                    TZS {formatCurrency(filtered.reduce((sum, o) => sum + o.amount_total, 0))}
                   </td>
                 </tr>
               </tfoot>

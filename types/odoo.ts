@@ -128,6 +128,7 @@ export interface ResPartner {
   zip: string | false;
   country_id: OdooRelation | false;
   vat: string | false;
+  x_tin: string | false;
   is_company: boolean;
   customer_rank: number;
   supplier_rank: number;

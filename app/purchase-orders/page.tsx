@@ -148,7 +148,7 @@ export default function PurchaseOrdersPage() {
                     Total:
                   </td>
                   <td className="px-4 py-1.5 text-right font-bold text-[14px] text-[var(--color-ink)]">
-                    {formatCurrency(filtered.reduce((sum, po) => sum + po.amount_total, 0))}
+                    TZS {formatCurrency(filtered.reduce((sum, po) => sum + po.amount_total, 0))}
                   </td>
                 </tr>
               </tfoot>

@@ -142,9 +142,7 @@ export default function InvoicesPage() {
                     <td className="px-4 py-2 text-[var(--color-ink)]">{inv.partner_id[1]}</td>
                     <td className="px-4 py-2 text-[14px] text-[var(--color-muted)]">{formatDate(inv.invoice_date)}</td>
                     <td className="px-4 py-2 text-[14px] text-[var(--color-muted)]">
-                      {inv.payment_state && inv.payment_state !== "not_paid"
-                        ? PAYMENT_LABELS[inv.payment_state] || inv.payment_state
-                        : "-"}
+                      {inv.payment_state ? <Badge state={inv.payment_state} /> : "-"}
                     </td>
                     <td className="px-4 py-2"><Badge state={inv.state} /></td>
                     <td className="px-4 py-2 text-right">
@@ -161,7 +159,7 @@ export default function InvoicesPage() {
                     Total:
                   </td>
                   <td className="px-4 py-1.5 text-right font-bold text-[14px] text-[var(--color-ink)]">
-                    {formatCurrency(filtered.reduce((sum, inv) => sum + inv.amount_total, 0))}
+                    TZS {formatCurrency(filtered.reduce((sum, inv) => sum + inv.amount_total, 0))}
                   </td>
                 </tr>
               </tfoot>

@@ -15,9 +15,9 @@ export default function NewProductPage() {
   const [name, setName] = useState("");
   const [defaultCode, setDefaultCode] = useState("");
   const [description, setDescription] = useState("");
-  const [productType, setProductType] = useState<"product" | "service">("product");
+  const [productType, setProductType] = useState<"consu" | "service">("consu");
   const [saleOk, setSaleOk] = useState(true);
-  const [purchaseOk, setPurchaseOk] = useState(false);
+  const [purchaseOk, setPurchaseOk] = useState(true);
   const [listPrice, setListPrice] = useState(0);
   const [standardPrice, setStandardPrice] = useState(0);
 
@@ -79,9 +79,9 @@ export default function NewProductPage() {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => setProductType("product")}
+                onClick={() => setProductType("consu")}
                 className={`flex-1 rounded-lg border px-4 py-3 text-sm font-medium transition-colors ${
-                  productType === "product"
+                  productType === "consu"
                     ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
                     : "border-[var(--color-hairline)] bg-[var(--color-canvas)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
                 }`}

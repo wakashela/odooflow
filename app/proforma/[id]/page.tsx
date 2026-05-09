@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
 import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { Badge } from "@/components/ui/Badge";
+import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DocumentHeader } from "@/components/documents/DocumentHeader";
@@ -24,6 +25,7 @@ export default function ProformaDetailPage() {
   const [order, setOrder] = useState<SaleOrder | null>(null);
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
   const [purchaseOrderIds, setPurchaseOrderIds] = useState<number[]>([]);
+  const [partnerAddress, setPartnerAddress] = useState("");
   const [loading, setLoading] = useState(true);
 
   const loadOrder = useCallback(async () => {
@@ -33,10 +35,16 @@ export default function ProformaDetailPage() {
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
       ]);
-      const purchaseOrders = await fetchPurchaseOrdersByOrigin(so.name);
+      const [purchaseOrders, partner] = await Promise.all([
+        fetchPurchaseOrdersByOrigin(so.name),
+        fetchCustomerById(so.partner_id[0])
+      ]);
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
+      if (partner) {
+        setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
+      }
     } catch (err) {
       console.error("Failed to load proforma:", err);
     } finally {
@@ -64,16 +72,21 @@ export default function ProformaDetailPage() {
     );
   }
 
-  const lineItems: LineItem[] = rawLines.map((l) => ({
-    id: l.id,
-    productId: l.product_id?.[0],
-    productLabel: l.product_id?.[1],
-    description: l.name,
-    quantity: l.product_uom_qty,
-    unitPrice: l.price_unit,
-    discount: l.discount,
-    subtotal: l.price_subtotal,
-  }));
+  const lineItems: LineItem[] = rawLines.map((l) => {
+    const label = l.product_id?.[1] || "";
+    const match = label.match(/^\\[(.*?)\\]/);
+    return {
+      id: l.id,
+      productId: l.product_id?.[0],
+      productLabel: label,
+      partNumber: match ? match[1] : "",
+      description: l.name,
+      quantity: l.product_uom_qty,
+      unitPrice: l.price_unit,
+      discount: l.discount,
+      subtotal: l.price_subtotal,
+    };
+  });
 
   const computedSubtotal = lineItems.reduce((s, l) => s + l.subtotal, 0);
   const computedTax = computedSubtotal * 0.18;
@@ -158,6 +171,7 @@ export default function ProformaDetailPage() {
         documentName={`PRO-${order.name}`}
         documentType="Proforma Invoice"
         partnerName={order.partner_id[1]}
+        partnerAddress={partnerAddress}
         date={order.date_order}
         expiryDate={order.validity_date}
       />
@@ -175,7 +189,7 @@ export default function ProformaDetailPage() {
           <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Terms & Conditions
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
         </Card>
       )}
 

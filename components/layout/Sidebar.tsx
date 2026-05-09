@@ -16,16 +16,18 @@ import {
   Truck, 
   Package, 
   Users,
-  LogOut 
+  LogOut,
+  ClipboardList
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/", icon: LayoutDashboard },
   { label: "Quotations", href: "/quotations", icon: FileText },
   { label: "Proforma", href: "/proforma", icon: FileSignature },
-  { label: "Orders", href: "/purchase-orders", icon: ShoppingCart },
+  { label: "Purchases", href: "/purchase-orders", icon: ShoppingCart },
   { label: "Invoices", href: "/invoices", icon: Receipt },
   { label: "Delivery", href: "/delivery", icon: Truck },
+  { label: "Packing List", href: "/packing-lists", icon: ClipboardList },
   { label: "Products", href: "/products", icon: Package },
   { label: "Customers", href: "/customers", icon: Users },
 ];

@@ -10,6 +10,7 @@ interface DocumentHeaderProps {
   date: string;
   expiryDate?: string;
   origin?: string;
+  onEditCustomer?: () => void;
 }
 
 export function DocumentHeader({
@@ -20,6 +21,7 @@ export function DocumentHeader({
   date,
   expiryDate,
   origin,
+  onEditCustomer,
 }: DocumentHeaderProps) {
   return (
     <div className="rounded-xl border border-[var(--color-border)] bg-white overflow-hidden">
@@ -48,9 +50,19 @@ export function DocumentHeader({
       </div>
       <div className="grid grid-cols-2 gap-6 p-6">
         <div>
-          <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
-            Bill To
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+              Bill To
+            </p>
+            {onEditCustomer && (
+              <button
+                onClick={onEditCustomer}
+                className="text-xs font-medium text-[var(--color-primary)] hover:underline"
+              >
+                Edit
+              </button>
+            )}
+          </div>
           <p className="text-base font-semibold text-[var(--color-text)]">{partnerName}</p>
           {partnerAddress && (
             <p className="mt-0.5 text-sm text-[var(--color-text-muted)]">{partnerAddress}</p>

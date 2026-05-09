@@ -18,7 +18,8 @@ export default function NewCustomerPage() {
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [vat, setVat] = useState("");
-  const [isCompany, setIsCompany] = useState(false);
+  const [x_tin, setXTin] = useState("");
+  const [isCompany, setIsCompany] = useState(true);
 
   async function handleSave() {
     if (!name.trim()) {
@@ -35,6 +36,7 @@ export default function NewCustomerPage() {
         street: street.trim() || undefined,
         city: city.trim() || undefined,
         vat: vat.trim() || undefined,
+        x_tin: x_tin.trim() || undefined,
         is_company: isCompany,
       });
       router.push("/customers");
@@ -80,10 +82,16 @@ export default function NewCustomerPage() {
             onChange={(e) => setStreet(e.target.value)} 
           />
           <Input 
-            label="VAT Number" 
+            label="VRN" 
             placeholder="e.g., 40-315066-K" 
             value={vat} 
             onChange={(e) => setVat(e.target.value)} 
+          />
+          <Input 
+            label="TIN" 
+            placeholder="e.g., 168-782-179" 
+            value={x_tin} 
+            onChange={(e) => setXTin(e.target.value)} 
           />
         </div>
 

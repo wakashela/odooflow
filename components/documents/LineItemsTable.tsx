@@ -26,6 +26,9 @@ export function LineItemsTable({
             <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-8">
               #
             </th>
+            <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-32">
+              Part No
+            </th>
             <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider">
               Description
             </th>
@@ -58,6 +61,9 @@ export function LineItemsTable({
               )}
             >
               <td className="px-4 py-3 text-[var(--color-text-muted)]">{idx + 1}</td>
+              <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs font-medium">
+                {line.partNumber || "-"}
+              </td>
               <td className="px-4 py-3">
                 {editable ? (
                   <input
@@ -129,7 +135,7 @@ export function LineItemsTable({
           ))}
           {lines.length === 0 && (
             <tr>
-              <td colSpan={editable ? 7 : 5} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
+              <td colSpan={editable ? 8 : 6} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
                 No line items
               </td>
             </tr>
