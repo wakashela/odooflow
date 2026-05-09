@@ -7,6 +7,7 @@ import { fetchProductById, updateProduct } from "@/lib/odoo/partner";
 import { type ProductProduct } from "@/types/odoo";
 import { ArrowLeft, Edit2, Tag, Layers, Check, X, Box } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -131,7 +132,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-hairline)] border-t-[var(--color-primary)]" />
+        <Spinner size="lg" />
       </div>
     );
   }

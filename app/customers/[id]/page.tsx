@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchCustomerById, updateCustomer } from "@/lib/odoo/partner";
 import { type ResPartner } from "@/types/odoo";
 import { ArrowLeft, Edit2, Phone, Mail, MapPin, Building2, Check, X } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
@@ -100,7 +101,7 @@ export default function CustomerDetailPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-[var(--color-hairline)] border-t-[var(--color-primary)]" />
+        <Spinner size="lg" />
       </div>
     );
   }

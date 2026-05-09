@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchCustomers, updateCustomer, createCustomer } from "@/lib/odoo/partner";
+import { Spinner } from "@/components/ui/Spinner";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { ResPartner } from "@/types/odoo";
-import { Search, Plus, Edit2, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Edit2, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CustomersPage() {
   const { session } = useAuthStore();
@@ -122,10 +123,6 @@ export default function CustomersPage() {
           Customers
         </h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleCreateQuick}>
-            <Plus size={14} />
-            Quick Create
-          </Button>
           <Link href="/customers/new">
             <Button>New Customer</Button>
           </Link>
@@ -148,7 +145,7 @@ export default function CustomersPage() {
 
       {loading ? (
         <div className="flex h-32 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+          <Spinner size="sm" />
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">

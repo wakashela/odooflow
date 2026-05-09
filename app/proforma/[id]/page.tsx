@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
 import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
+import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Button } from "@/components/ui/Button";
@@ -59,7 +60,7 @@ export default function ProformaDetailPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+        <Spinner size="md" />
       </div>
     );
   }

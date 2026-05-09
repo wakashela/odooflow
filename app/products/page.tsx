@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchProducts } from "@/lib/odoo/partner";
 import { formatCurrency } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import type { ProductProduct } from "@/types/odoo";
 import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
@@ -142,7 +143,7 @@ export default function ProductsPage() {
 
       {loading ? (
         <div className="flex h-32 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+          <Spinner size="sm" />
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">

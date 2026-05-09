@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchPurchaseOrders } from "@/lib/odoo/purchase";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import type { PurchaseOrder } from "@/types/odoo";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
@@ -108,7 +109,7 @@ export default function PurchaseOrdersPage() {
 
       {loading ? (
         <div className="flex h-32 items-center justify-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+          <Spinner size="sm" />
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">

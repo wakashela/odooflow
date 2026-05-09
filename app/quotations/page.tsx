@@ -8,9 +8,9 @@ import { fetchQuotations } from "@/lib/odoo/sale";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
 import type { SaleOrder } from "@/types/odoo";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { PageLoader } from "@/components/ui/PageLoader";
 
 export default function QuotationsPage() {
   const router = useRouter();
@@ -130,7 +130,9 @@ export default function QuotationsPage() {
       </div>
 
       {loading ? (
-        <PageLoader message="Loading quotations…" className="h-32" />
+        <div className="flex items-center justify-center h-32">
+          <Spinner size="sm" />
+        </div>
       ) : (
         <div className="bg-white rounded-xl border border-[var(--color-hairline)] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">

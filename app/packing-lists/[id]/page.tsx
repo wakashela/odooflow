@@ -6,6 +6,7 @@ import Link from "next/link";
 import { fetchDeliveryById, fetchStockMoves, validateDelivery } from "@/lib/odoo/stock";
 import { odooCall } from "@/lib/odoo/client";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -74,7 +75,7 @@ export default function PackingListDetailPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+        <Spinner size="md" />
       </div>
     );
   }

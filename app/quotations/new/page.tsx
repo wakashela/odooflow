@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createQuotation } from "@/lib/odoo/sale";
 import { fetchCustomers, fetchProducts, searchPartners, createCustomer, createProduct } from "@/lib/odoo/partner";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -269,7 +270,7 @@ export default function NewQuotationPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+        <Spinner size="md" />
       </div>
     );
   }
@@ -307,7 +308,7 @@ export default function NewQuotationPage() {
               placeholder="Search customers..."
             />
             {customerQuery && customerSuggestions.length > 0 && (
-              <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
+              <div className="absolute z-50 top-full mt-1 left-0 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
                 {customerSuggestions.map((c) => (
                   <button
                     key={c.id}
@@ -326,7 +327,7 @@ export default function NewQuotationPage() {
               </div>
             )}
             {customerQuery && partnerId === 0 && customerSuggestions.length === 0 && !customerSearching && (
-              <div className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--color-border)] bg-white">
+              <div className="absolute z-50 top-full mt-1 left-0 w-full rounded-lg border border-[var(--color-border)] bg-white">
                 <button
                   onMouseDown={(e) => {
                     e.preventDefault();
@@ -394,7 +395,7 @@ export default function NewQuotationPage() {
                     placeholder="Select product..."
                   />
                   {productMatches.length > 0 && (
-                    <div className="absolute z-50 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
+                    <div className="absolute z-50 top-full mt-1 left-0 w-full max-h-56 overflow-auto rounded-lg border border-[var(--color-border)] bg-white">
                       {productMatches.map((p) => (
                         <button
                           key={p.id}
@@ -411,7 +412,7 @@ export default function NewQuotationPage() {
                     </div>
                   )}
                   {pq && productMatches.length === 0 && (
-                    <div className="absolute z-50 mt-1 w-full rounded-lg border border-[var(--color-border)] bg-white">
+                    <div className="absolute z-50 top-full mt-1 left-0 w-full rounded-lg border border-[var(--color-border)] bg-white">
                       <button
                         onMouseDown={(e) => {
                           e.preventDefault();

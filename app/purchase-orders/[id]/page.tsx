@@ -7,6 +7,7 @@ import { fetchPurchaseOrderById, fetchPurchaseOrderLines, confirmPurchaseOrder }
 import { odooCall } from "@/lib/odoo/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { fetchCustomerById } from "@/lib/odoo/partner";
+import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -83,7 +84,7 @@ export default function PurchaseOrderDetailPage() {
   if (loading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--color-primary)] border-t-transparent" />
+        <Spinner size="md" />
       </div>
     );
   }
