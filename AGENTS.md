@@ -73,6 +73,12 @@ Tailwind CSS v4 with `@tailwindcss/postcss`. Theme colors defined as CSS variabl
 
 `@react-pdf/renderer` components in `components/pdf/`. Shared styles in `lib/pdf/styles.ts`, logo in `lib/pdf/logo.ts`. Server-side PDF endpoint at `app/api/pdf/`. The `scripts/generate-sample-pdf.js` script can generate a sample PDF but has lint issues (require imports).
 
+## Scripts
+
+- `scripts/setup_odoo.py` — Configures a fresh Odoo database for OdooFlow (Python stdlib, no deps). Run once after cloning: `python scripts/setup_odoo.py`
+- `scripts/seed-data.ts` — Creates test data for development (customers, products, quotations, POs, invoices, deliveries)
+- `scripts/generate-sample-pdf.js` — Generates a sample PDF to verify header layout (uses `require`, has lint warnings)
+
 ## State management
 
 Zustand stores in `store/`:
