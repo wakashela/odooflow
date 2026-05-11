@@ -21,6 +21,7 @@ import {
   ClipboardList,
   PanelLeftClose,
   PanelLeftOpen,
+  Settings,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -105,6 +106,19 @@ export function Sidebar() {
 
       {/* Footer Area / User Info */}
       <div className="p-2 border-t border-[var(--color-hairline)] space-y-1">
+        <Link
+          href="/settings"
+          className={cn(
+            "w-full flex items-center gap-3 px-3 py-2 text-[14px] font-medium text-[var(--color-muted)] hover:text-[var(--color-primary)] transition-colors rounded-lg group",
+            collapsed && "justify-center px-2"
+          )}
+          title={collapsed ? "Settings" : undefined}
+        >
+          <div className="w-8 h-8 rounded-full bg-[var(--color-surface-soft)] flex items-center justify-center text-[var(--color-muted)] group-hover:text-[var(--color-primary)] transition-colors shrink-0">
+            <Settings size={16} />
+          </div>
+          {!collapsed && "Settings"}
+        </Link>
         {!collapsed && (
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-8 h-8 rounded-full bg-[var(--color-surface-soft)] text-[var(--color-ink)] flex items-center justify-center font-bold text-sm shrink-0">

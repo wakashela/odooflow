@@ -1,7 +1,12 @@
 import fs from "fs";
 import path from "path";
 
-export function getLogoSrc(): string | null {
+export function getLogoSrc(logoBase64?: string | false | null): string | null {
+  // If a base64 logo was passed (from Odoo res.company.logo), use it directly
+  if (logoBase64) {
+    return logoBase64.startsWith("data:") ? logoBase64 : `data:image/png;base64,${logoBase64}`;
+  }
+
   // Prefer embedding the file as a data URI when available on the filesystem
   try {
     const localPath = path.join(process.cwd(), "public", "logo.png");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToStream, Document } from "@react-pdf/renderer";
 import { DeliveryNotePDFPage } from "@/components/pdf/DeliveryNotePDF";
+import { fetchPdfSettings } from "@/lib/odoo/server-settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
 
@@ -74,6 +75,10 @@ export async function GET(
       return NextResponse.json({ error: "Delivery not found" }, { status: 404 });
     }
 
+    const [pdfSettings] = await Promise.all([
+      fetchPdfSettings(sessionId),
+    ]);
+
     const picking = pickings[0];
     const partnerId = picking.partner_id as [number, string];
 
@@ -117,6 +122,8 @@ export async function GET(
       dateDone: picking.date_done ? new Date(picking.date_done as string).toLocaleDateString("en-GB") : undefined,
       origin: picking.origin as string | undefined,
       moves: deliveryMoves,
+      company: pdfSettings.company,
+      pdfColors: pdfSettings.colors,
     };
 
     const doc = copyType ? (

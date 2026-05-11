@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToStream, Document } from "@react-pdf/renderer";
 import { PackingListPDFPage } from "@/components/pdf/PackingListPDF";
+import { fetchPdfSettings } from "@/lib/odoo/server-settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
 
@@ -96,6 +97,10 @@ export async function GET(
       );
     }
 
+    const [pdfSettings] = await Promise.all([
+      fetchPdfSettings(sessionId),
+    ]);
+
     const picking = pickings[0];
     const partnerId = picking.partner_id as [number, string];
 
@@ -150,6 +155,8 @@ export async function GET(
       moves: deliveryMoves,
       packages: deliveryMoves.length,
       weight: picking.weight ? String(picking.weight) : undefined,
+      company: pdfSettings.company,
+      pdfColors: pdfSettings.colors,
     };
 
     const doc = copyType ? (

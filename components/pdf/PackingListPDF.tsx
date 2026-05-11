@@ -1,6 +1,17 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
-import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
+import { buildPdfStyles, buildPdfColors } from "@/lib/pdf/styles";
 import { getLogoSrc } from "@/lib/pdf/logo";
+import type { CompanySettings, PdfColorSettings } from "@/types/settings";
+
+function buildCompanyAddress(company: CompanySettings | null | undefined) {
+  if (!company) return "21493 Dar es salaam, TANZANIA";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+}
+
+function buildCompanyTin(company: CompanySettings | null | undefined) {
+  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
+  return company.vat || "N/A";
+}
 
 interface DeliveryMove {
   id: number;
@@ -21,6 +32,8 @@ interface PackingListPDFProps {
   packages?: number;
   weight?: string;
   copyType?: "original" | "duplicate";
+  company?: CompanySettings | null;
+  pdfColors?: PdfColorSettings;
 }
 
 export function PackingListPDFPage({
@@ -34,8 +47,16 @@ export function PackingListPDFPage({
   packages,
   weight,
   copyType,
+  company,
+  pdfColors,
 }: PackingListPDFProps) {
-  const logoSrc = getLogoSrc();
+  const logoSrc = getLogoSrc(company?.logo);
+
+  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyTin = buildCompanyTin(company);
+
+  const colors = buildPdfColors(pdfColors);
+  const pdfStyles = buildPdfStyles(colors);
 
   return (
     <Page size="A4" style={pdfStyles.page}>
@@ -60,16 +81,16 @@ export function PackingListPDFPage({
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
             <View style={pdfStyles.companyDetails}>
               <Text style={pdfStyles.companyName}>
-                JENSEN AUTOMATIONS TECHNOLOGY LIMITED
+                {companyName}
               </Text>
               <View style={pdfStyles.companyInfo}>
-                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
-                <Text>21493 Dar es salaam, TANZANIA</Text>
-                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+                <Text>{companyTin}</Text>
+                <Text>{buildCompanyAddress(company)}</Text>
+                <Text>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
               </View>
             </View>
           </View>
-          <View style={[pdfStyles.docTypeBadge, { backgroundColor: "#6D28D9" }]}>
+          <View style={[pdfStyles.docTypeBadge, { backgroundColor: colors.accent }]}>
             <Text style={pdfStyles.docTypeLabel}>PACKING LIST</Text>
           </View>
         </View>
@@ -100,7 +121,7 @@ export function PackingListPDFPage({
         </View>
 
         <View style={pdfStyles.table}>
-          <View style={[pdfStyles.tableHeader, { backgroundColor: "#6D28D9" }]}>
+          <View style={[pdfStyles.tableHeader, { backgroundColor: colors.accent }]}>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>
               #
             </Text>
@@ -183,7 +204,7 @@ export function PackingListPDFPage({
           style={{
             padding: 16,
             borderTopWidth: 1,
-            borderColor: PDF_COLORS.border,
+            borderColor: colors.border,
             marginTop: 8,
           }}
         >
@@ -193,7 +214,7 @@ export function PackingListPDFPage({
               fontFamily: "Helvetica-Bold",
               textTransform: "uppercase",
               letterSpacing: 0.6,
-              color: PDF_COLORS.textMuted,
+              color: colors.textMuted,
               marginBottom: 8,
             }}
           >
@@ -216,7 +237,7 @@ export function PackingListPDFPage({
         </View>
 
         <View style={pdfStyles.footer}>
-          <Text>Jensen Automations Technology Limited | TIN: 168-782-179</Text>
+          <Text>{companyName} | {companyTin}</Text>
           <Text
             render={({ pageNumber, totalPages }) =>
               `Page ${pageNumber} of ${totalPages}`

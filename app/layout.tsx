@@ -11,8 +11,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Jensen International — Customer Portal",
-  description: "Customer relationship management for Jensen Automations Technology Limited",
+  title: "OdooFlow",
+  description: "Business document management portal",
+  icons: {
+    icon: "/logo-icon.ico",
+  },
 };
 
 export default function RootLayout({

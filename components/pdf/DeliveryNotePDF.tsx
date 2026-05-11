@@ -1,8 +1,17 @@
-
-
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
-import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
+import { buildPdfStyles, buildPdfColors } from "@/lib/pdf/styles";
 import { getLogoSrc } from "@/lib/pdf/logo";
+import type { CompanySettings, PdfColorSettings } from "@/types/settings";
+
+function buildCompanyAddress(company: CompanySettings | null | undefined) {
+  if (!company) return "21493 Dar es salaam, TANZANIA";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+}
+
+function buildCompanyTin(company: CompanySettings | null | undefined) {
+  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
+  return company.vat || "N/A";
+}
 
 interface DeliveryMove {
   id: number;
@@ -21,6 +30,8 @@ interface DeliveryNotePDFProps {
   origin?: string;
   moves: DeliveryMove[];
   copyType?: "original" | "duplicate";
+  company?: CompanySettings | null;
+  pdfColors?: PdfColorSettings;
 }
 
 export function DeliveryNotePDFPage({
@@ -32,8 +43,16 @@ export function DeliveryNotePDFPage({
   origin,
   moves,
   copyType,
+  company,
+  pdfColors,
 }: DeliveryNotePDFProps) {
-  const logoSrc = getLogoSrc();
+  const logoSrc = getLogoSrc(company?.logo);
+
+  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyTin = buildCompanyTin(company);
+
+  const colors = buildPdfColors(pdfColors);
+  const pdfStyles = buildPdfStyles(colors);
 
   return (
     <Page size="A4" style={pdfStyles.page}>
@@ -46,15 +65,15 @@ export function DeliveryNotePDFPage({
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
             <View style={pdfStyles.companyDetails}>
-              <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
+              <Text style={pdfStyles.companyName}>{companyName}</Text>
               <View style={pdfStyles.companyInfo}>
-                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
-                <Text>21493 Dar es salaam, TANZANIA</Text>
-                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+                <Text>{companyTin}</Text>
+                <Text>{buildCompanyAddress(company)}</Text>
+                <Text>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
               </View>
             </View>
           </View>
-          <View style={[pdfStyles.docTypeBadge, { backgroundColor: "#059669" }]}>
+          <View style={[pdfStyles.docTypeBadge, { backgroundColor: colors.primaryDark || colors.primary }]}>
             <Text style={pdfStyles.docTypeLabel}>DELIVERY NOTE</Text>
           </View>
         </View>
@@ -81,7 +100,7 @@ export function DeliveryNotePDFPage({
         </View>
 
         <View style={pdfStyles.table}>
-          <View style={[pdfStyles.tableHeader, { backgroundColor: "#059669" }]}>
+          <View style={[pdfStyles.tableHeader, { backgroundColor: colors.primaryDark || colors.primary }]}>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>#</Text>
             <Text style={[pdfStyles.tableHeaderCell, { width: "45%" }]}>Product</Text>
             <Text style={[pdfStyles.tableHeaderCell, { width: "15%", textAlign: "right" }]}>Demand</Text>
@@ -107,23 +126,23 @@ export function DeliveryNotePDFPage({
 
         <View style={{ padding: 40, flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ flexDirection: "column", gap: 4 }}>
-            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
+            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: colors.textMuted }}>
               Received By
             </Text>
-            <View style={{ borderBottomWidth: 1, borderColor: PDF_COLORS.border, width: 180, marginTop: 30 }} />
-            <Text style={{ fontSize: 7, color: PDF_COLORS.textMuted }}>Name / Signature / Date</Text>
+            <View style={{ borderBottomWidth: 1, borderColor: colors.border, width: 180, marginTop: 30 }} />
+            <Text style={{ fontSize: 7, color: colors.textMuted }}>Name / Signature / Date</Text>
           </View>
           <View style={{ flexDirection: "column", gap: 4 }}>
-            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: PDF_COLORS.textMuted }}>
+            <Text style={{ fontSize: 8, fontFamily: "Helvetica-Bold", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, color: colors.textMuted }}>
               Delivered By
             </Text>
-            <View style={{ borderBottomWidth: 1, borderColor: PDF_COLORS.border, width: 180, marginTop: 30 }} />
-            <Text style={{ fontSize: 7, color: PDF_COLORS.textMuted }}>Name / Signature / Date</Text>
+            <View style={{ borderBottomWidth: 1, borderColor: colors.border, width: 180, marginTop: 30 }} />
+            <Text style={{ fontSize: 7, color: colors.textMuted }}>Name / Signature / Date</Text>
           </View>
         </View>
 
         <View style={pdfStyles.footer}>
-          <Text>Jensen Automations Technology Limited | TIN: 168-782-179</Text>
+          <Text>{companyName} | {companyTin}</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>

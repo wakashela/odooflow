@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToStream, Document } from "@react-pdf/renderer";
 import { InvoicePDFPage } from "@/components/pdf/InvoicePDF";
+import { fetchPdfSettings } from "@/lib/odoo/server-settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
@@ -79,6 +80,10 @@ export async function GET(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
+    const [pdfSettings] = await Promise.all([
+      fetchPdfSettings(sessionId),
+    ]);
+
     const invoice = invoices[0];
     const partnerId = invoice.partner_id as [number, string];
 
@@ -119,7 +124,7 @@ export async function GET(
       const p = l.product_id as [number, string] | false;
       return Array.isArray(p) ? p[0] : undefined;
     }).filter(Boolean) as number[];
-    let partNumbers: Record<number, string> = {};
+    const partNumbers: Record<number, string> = {};
     if (productIds.length > 0) {
       const prods = await odooServerCall<Record<string, unknown>[]>(
         sessionId, "product.product", "search_read",
@@ -157,6 +162,9 @@ export async function GET(
       paymentState: invoice.payment_state as string | undefined,
       notes: invoice.narration as string | undefined,
       paymentTerms,
+      company: pdfSettings.company,
+      banks: pdfSettings.banks,
+      pdfColors: pdfSettings.colors,
     };
 
     const doc = copyParam ? (

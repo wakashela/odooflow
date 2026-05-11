@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToStream, Document } from "@react-pdf/renderer";
 import { QuotationPDFPage } from "@/components/pdf/QuotationPDF";
+import { fetchPdfSettings } from "@/lib/odoo/server-settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
@@ -79,6 +80,10 @@ export async function GET(
       return NextResponse.json({ error: "Quotation not found" }, { status: 404 });
     }
 
+    const [pdfSettings] = await Promise.all([
+      fetchPdfSettings(sessionId),
+    ]);
+
     const order = orders[0];
     const partnerId = order.partner_id as [number, string];
 
@@ -121,7 +126,7 @@ export async function GET(
       const p = l.product_id as [number, string] | false;
       return Array.isArray(p) ? p[0] : undefined;
     }).filter(Boolean) as number[];
-    let partNumbers: Record<number, string> = {};
+    const partNumbers: Record<number, string> = {};
     if (productIds.length > 0) {
       const prods = await odooServerCall<Record<string, unknown>[]>(
         sessionId, "product.product", "search_read",
@@ -157,6 +162,9 @@ export async function GET(
       amountTotal: order.amount_total as number,
       notes: order.note as string | undefined,
       paymentTerms,
+      company: pdfSettings.company,
+      banks: pdfSettings.banks,
+      pdfColors: pdfSettings.colors,
     };
 
     const doc = copyParam ? (

@@ -1,8 +1,21 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
-import { pdfStyles, PDF_COLORS } from "@/lib/pdf/styles";
+import { buildPdfStyles, buildPdfColors } from "@/lib/pdf/styles";
 import { getLogoSrc } from "@/lib/pdf/logo";
 import type { LineItem } from "@/types/documents";
+import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
 import { formatCurrency } from "@/lib/utils";
+
+const DEFAULT_BANK = { bank_name: "CRDB BANK", acc_holder_name: "Jensen Automations Technology Limited", x_tzs_account: "015C001GAEC00", x_usd_account: "025C001GAEC00", bank_bic: "CORUTZTZ", x_branch: "UDSM Branch", x_sort_code: "3386" } as unknown as BankDetail;
+
+function buildCompanyAddress(company: CompanySettings | null | undefined) {
+  if (!company) return "21493 Dar es salaam, TANZANIA";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+}
+
+function buildCompanyTin(company: CompanySettings | null | undefined) {
+  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
+  return company.vat || "N/A";
+}
 
 interface InvoicePDFProps {
   documentName: string;
@@ -20,6 +33,9 @@ interface InvoicePDFProps {
   notes?: string;
   paymentTerms?: string;
   copyType?: "original" | "duplicate";
+  company?: CompanySettings | null;
+  banks?: BankDetail[];
+  pdfColors?: PdfColorSettings;
 }
 
 export function InvoicePDFPage({
@@ -38,11 +54,22 @@ export function InvoicePDFPage({
   notes,
   paymentTerms,
   copyType,
+  company,
+  banks,
+  pdfColors,
 }: InvoicePDFProps) {
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);
   const discount = lines.reduce((s, l) => s + (l.quantity * l.unitPrice - l.subtotal), 0);
   const isProforma = documentType.toLowerCase().includes("proforma");
-  const logoSrc = getLogoSrc();
+  const logoSrc = getLogoSrc(company?.logo);
+
+  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyAddress = buildCompanyAddress(company);
+  const companyTin = buildCompanyTin(company);
+  const bankData = banks?.[0] || DEFAULT_BANK;
+
+  const colors = buildPdfColors(pdfColors);
+  const pdfStyles = buildPdfStyles(colors);
 
   return (
     <Page size="A4" style={pdfStyles.page}>
@@ -55,15 +82,15 @@ export function InvoicePDFPage({
           <View style={pdfStyles.headerLeft}>
             {logoSrc && <Image src={logoSrc} style={pdfStyles.logo} />}
             <View style={pdfStyles.companyDetails}>
-              <Text style={pdfStyles.companyName}>JENSEN AUTOMATIONS TECHNOLOGY LIMITED</Text>
+              <Text style={pdfStyles.companyName}>{companyName}</Text>
               <View style={pdfStyles.companyInfo}>
-                <Text>TIN: 168-782-179 | VRN: 40-315066-K</Text>
-                <Text>21493 Dar es salaam, TANZANIA</Text>
-                <Text>Tel: +255745205050 | info@jensenintl.com</Text>
+                <Text>{companyTin}</Text>
+                <Text>{companyAddress}</Text>
+                <Text>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
               </View>
             </View>
           </View>
-          <View style={pdfStyles.docTypeBadge}>
+          <View style={[pdfStyles.docTypeBadge, { backgroundColor: colors.primary }]}>
             <Text style={pdfStyles.docTypeLabel}>{documentType.toUpperCase()}</Text>
           </View>
         </View>
@@ -86,13 +113,13 @@ export function InvoicePDFPage({
             {origin && (
               <Text style={pdfStyles.infoSubValue}>Origin: {origin}</Text>
             )}
-{paymentState && !isProforma && (
-          <Text style={pdfStyles.infoSubValue}>Payment: {paymentState}</Text>
-        )}
-        {paymentTerms && (
-          <Text style={pdfStyles.infoSubValue}>Payment Terms: {paymentTerms}</Text>
-        )}
-        </View>
+            {paymentState && !isProforma && (
+              <Text style={pdfStyles.infoSubValue}>Payment: {paymentState}</Text>
+            )}
+            {paymentTerms && (
+              <Text style={pdfStyles.infoSubValue}>Payment Terms: {paymentTerms}</Text>
+            )}
+          </View>
         </View>
 
         {isProforma && (
@@ -161,28 +188,28 @@ export function InvoicePDFPage({
           <Text style={pdfStyles.bankTitle}>Bank Details</Text>
           <View style={pdfStyles.bankGrid}>
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>CRDB BANK</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>Jensen Automations Technology Limited</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>015C001GAEC00</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>025C001GAEC00</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text></Text>
             </View>
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>CORUTZTZ</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>UDSM Branch</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>3386</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text></Text>
+              <Text><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text></Text>
             </View>
           </View>
         </View>
 
         {notes && (
-          <View style={{ padding: 16, borderTopWidth: 1, borderColor: PDF_COLORS.border }}>
+          <View style={{ padding: 16, borderTopWidth: 1, borderColor: colors.border }}>
             <Text style={pdfStyles.infoLabel}>Notes</Text>
             <Text style={{ fontSize: 8, marginTop: 4, lineHeight: 1.5 }}>{notes}</Text>
           </View>
         )}
 
         <View style={pdfStyles.footer}>
-          <Text>Jensen Automations Technology Limited | TIN: 168-782-179</Text>
+          <Text>{companyName} | {companyTin}</Text>
           <Text render={({ pageNumber, totalPages }) => `Page ${pageNumber} of ${totalPages}`} />
         </View>
       </Page>
