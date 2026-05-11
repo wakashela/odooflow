@@ -47,7 +47,7 @@ def load_env(path: str) -> dict:
 
 
 def get_project_root() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # ----------------------------------------------------------------------
@@ -92,7 +92,7 @@ def step(num: int, title: str) -> None:
 
 def summary(results: list) -> None:
     print(f"\n{BOLD}{'='*50}{RESET}")
-    print(f"{BOLD}Setup Summary{'='*RESET}")
+    print(f"{BOLD}Setup Summary{'=' * 50}{RESET}")
     print(f"{BOLD}{'='*50}{RESET}")
     for label, status, detail in results:
         icon = f"{GREEN}✅{RESET}" if status else f"{RED}❌{RESET}"
@@ -136,10 +136,21 @@ def field_exists(sock_url: str, uid: int, db: str, password: str,
         return False
 
 
+def get_model_id(sock_url: str, uid: int, db: str, password: str, model_name: str) -> int | None:
+    ids = xmlrpc_call(sock_url, "object", "execute_kw",
+                      db, uid, password, "ir.model", "search", [
+                          [["model", "=", model_name]]
+                      ], {"limit": 1})
+    return ids[0] if ids else None
+
+
 def create_field(sock_url: str, uid: int, db: str, password: str,
                  model: str, field_name: str, field_label: str, field_type: str = "char"):
+    model_id = get_model_id(sock_url, uid, db, password, model)
+    if not model_id:
+        raise Exception(f"Model '{model}' not found in ir.model")
     odoo_call(sock_url, uid, db, password, "ir.model.fields", "create", [{
-        "model": model,
+        "model_id": model_id,
         "name": field_name,
         "field_description": field_label,
         "ttype": field_type,
@@ -240,9 +251,9 @@ def main():
         fail("Missing ODOO_USER or ODOO_PASSWORD in .env.local")
         sys.exit(1)
 
-    print(f"{BOLD}{'='*50}{RESET}")
-    print(f"{BOLD}OdooFlow — Odoo Setup Script{'='*RESET}")
-    print(f"{BOLD}{'='*50}{RESET}")
+    print(f"{BOLD}{'=' * 50}{RESET}")
+    print(f"{BOLD}OdooFlow - Odoo Setup Script{'=' * 50}{RESET}")
+    print(f"{BOLD}{'=' * 50}{RESET}")
     print(f"  URL     : {ODOO_URL}")
     print(f"  Database: {ODOO_DB}")
     print(f"  User    : {ODOO_USER}")
