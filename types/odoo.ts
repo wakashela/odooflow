@@ -140,7 +140,7 @@ export interface ProductProduct {
   default_code: string | false;
   list_price: number;
   standard_price: number;
-  type: "consu" | "service" | "product";
+  type: "consu" | "service" | "combo";
   uom_id: OdooRelation;
   categ_id: OdooRelation;
   sale_ok: boolean;

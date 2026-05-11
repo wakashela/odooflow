@@ -233,9 +233,9 @@ export default function ProductDetailPage() {
             label="Product Type"
             value={editType}
             editable={editing}
-            onChange={(v) => setEditForm((p) => ({ ...p, type: v as "product" | "service" }))}
+            onChange={(v) => setEditForm((p) => ({ ...p, type: v as "consu" | "service" }))}
             options={[
-              { value: "product", label: "Product" },
+              { value: "consu", label: "Product" },
               { value: "service", label: "Service" },
             ]}
           />
