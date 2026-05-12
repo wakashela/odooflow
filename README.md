@@ -56,6 +56,43 @@ The script will:
 
 > **Credentials note:** The setup script requires full Odoo login credentials (username + password). API keys are not supported by the XML-RPC endpoint used here.
 
+### 3b. Create a New Odoo Database (Optional)
+
+If you need a fresh Odoo database, use the database creator script:
+
+```bash
+python scripts/create_database.py --db-name your_db_name --demo --master-password MASTER_PASSWORD --yes
+```
+
+**Arguments:**
+
+| Argument | Description |
+|----------|-------------|
+| `--db-name NAME` | Database name to create (required) |
+| `--demo` | Include demo data (sale, purchase, account, stock) |
+| `--clean` | Create clean instance (no demo data) |
+| `--master-password PW` | Odoo master password (required) |
+| `--odoo-url URL` | Odoo server URL (defaults to ODOO_URL from env) |
+| `--admin-password PW` | Admin user password (default: admin) |
+| `--yes`, `-y` | Skip confirmation prompts |
+| `--force`, `-f` | Overwrite existing database |
+| `--skip-setup` | Skip the post-creation setup prompt |
+
+**Examples:**
+
+```bash
+# Create database with demo data
+python scripts/create_database.py --db-name jensenintl --demo --master-password 0RBrzdKG --yes
+
+# Create clean database (no demo data)
+python scripts/create_database.py --db-name mydb --clean --master-password PASSWORD --yes
+
+# Overwrite existing database
+python scripts/create_database.py --db-name jensenintl --demo --master-password 0RBrzdKG --yes --force
+```
+
+After creating the database, update your `.env.local` with the new database name and run `setup_odoo.py` to configure it.
+
 ### 4. Start the App
 
 ```bash
@@ -188,9 +225,10 @@ lib/           — Odoo RPC client, PDF styles, utilities
 store/         — Zustand stores for auth and document state
 types/         — TypeScript definitions for Odoo models
 public/        — Static assets (logo, icons)
-scripts/       — Utility scripts
-  setup_odoo.py   — Odoo first-time setup (Python, zero deps)
-  seed-data.ts     — Test data generator (Node.js, requires .env.local)
+scripts/         — Utility scripts
+  setup_odoo.py     — Odoo first-time setup (Python, zero deps)
+  create_database.py — Create new Odoo databases via XML-RPC
+  seed-data.ts      — Test data generator (Node.js, requires .env.local)
 ```
 
 ## Available Scripts
