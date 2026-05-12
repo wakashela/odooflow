@@ -104,6 +104,8 @@ export async function GET(
     const picking = pickings[0];
     const partnerId = picking.partner_id as [number, string];
 
+    const banks = await odooServerCall<Record<string, unknown>[]>(sessionId, "res.partner.bank", "search_read", [[["partner_id", "=", partnerId[0]]]], { fields: ["bank_name", "acc_holder_name", "x_tzs_account", "x_usd_account", "bank_bic", "x_branch", "x_sort_code"], limit: 3 });
+
     // Fetch partner address
     const partners = await odooServerCall<Record<string, unknown>[]>(
       sessionId,
@@ -157,6 +159,7 @@ export async function GET(
       weight: picking.weight ? String(picking.weight) : undefined,
       company: pdfSettings.company,
       pdfColors: pdfSettings.colors,
+      banks: banks as unknown as import("@/types/settings").BankDetail[],
     };
 
     const doc = copyType ? (

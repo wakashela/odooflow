@@ -1,16 +1,18 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { buildPdfStyles, buildPdfColors } from "@/lib/pdf/styles";
 import { getLogoSrc } from "@/lib/pdf/logo";
-import type { CompanySettings, PdfColorSettings } from "@/types/settings";
+import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
+
+const DEFAULT_BANK = { bank_name: "", acc_holder_name: "", x_tzs_account: "", x_usd_account: "", bank_bic: "", x_branch: "", x_sort_code: "" } as unknown as BankDetail;
 
 function buildCompanyAddress(company: CompanySettings | null | undefined) {
-  if (!company) return "21493 Dar es salaam, TANZANIA";
-  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+  if (!company) return "";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "";
 }
 
 function buildCompanyTin(company: CompanySettings | null | undefined) {
-  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
-  return company.vat || "N/A";
+  if (!company) return "";
+  return company.vat || "";
 }
 
 interface DeliveryMove {
@@ -31,6 +33,7 @@ interface DeliveryNotePDFProps {
   moves: DeliveryMove[];
   copyType?: "original" | "duplicate";
   company?: CompanySettings | null;
+  banks?: BankDetail[];
   pdfColors?: PdfColorSettings;
 }
 
@@ -45,11 +48,13 @@ export function DeliveryNotePDFPage({
   copyType,
   company,
   pdfColors,
+  banks,
 }: DeliveryNotePDFProps) {
   const logoSrc = getLogoSrc(company?.logo);
 
-  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyName = company?.name?.toUpperCase() || "";
   const companyTin = buildCompanyTin(company);
+  const bankData = banks?.[0] || DEFAULT_BANK;
 
   const colors = buildPdfColors(pdfColors);
   const pdfStyles = buildPdfStyles(colors);
@@ -69,7 +74,7 @@ export function DeliveryNotePDFPage({
               <View style={pdfStyles.companyInfo}>
                 <Text>{companyTin}</Text>
                 <Text>{buildCompanyAddress(company)}</Text>
-                <Text>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
+                <Text>Tel: {company?.phone} {company?.email && `| ${company.email}`}</Text>
               </View>
             </View>
           </View>
@@ -138,6 +143,57 @@ export function DeliveryNotePDFPage({
             </Text>
             <View style={{ borderBottomWidth: 1, borderColor: colors.border, width: 180, marginTop: 30 }} />
             <Text style={{ fontSize: 7, color: colors.textMuted }}>Name / Signature / Date</Text>
+          </View>
+        </View>
+
+        <View style={pdfStyles.bankSection}>
+          <Text style={pdfStyles.bankTitle}>Bank Details</Text>
+          <View style={pdfStyles.bankGrid}>
+            <View style={pdfStyles.bankCol}>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Bank:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Beneficiary:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text>
+              </View>
+              {bankData.x_tzs_account && (
+                <View style={pdfStyles.bankItem}>
+                  <Text style={pdfStyles.bankLabel}>TZS Account:</Text>
+                  <Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text>
+                </View>
+              )}
+              {bankData.x_usd_account && (
+                <View style={pdfStyles.bankItem}>
+                  <Text style={pdfStyles.bankLabel}>USD Account:</Text>
+                  <Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text>
+                </View>
+              )}
+            </View>
+            {bankData.bank_bic && (
+              <View style={pdfStyles.bankDivider} />
+            )}
+            {bankData.bank_bic && (
+              <View style={pdfStyles.bankCol}>
+                <View style={pdfStyles.bankItem}>
+                  <Text style={pdfStyles.bankLabel}>Swift/BIC:</Text>
+                  <Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text>
+                </View>
+                {bankData.x_branch && (
+                  <View style={pdfStyles.bankItem}>
+                    <Text style={pdfStyles.bankLabel}>Branch:</Text>
+                    <Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text>
+                  </View>
+                )}
+                {bankData.x_sort_code && (
+                  <View style={pdfStyles.bankItem}>
+                    <Text style={pdfStyles.bankLabel}>Sort Code:</Text>
+                    <Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         </View>
 

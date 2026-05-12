@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDate } from "@/lib/utils";
+import type { CompanySettings } from "@/types/settings";
 
 interface DocumentHeaderProps {
   documentName: string;
@@ -10,6 +11,7 @@ interface DocumentHeaderProps {
   date: string;
   expiryDate?: string;
   origin?: string;
+  company?: CompanySettings | null;
   onEditCustomer?: () => void;
 }
 
@@ -21,6 +23,7 @@ export function DocumentHeader({
   date,
   expiryDate,
   origin,
+  company,
   onEditCustomer,
 }: DocumentHeaderProps) {
   return (
@@ -31,12 +34,12 @@ export function DocumentHeader({
         </div>
         <div className="flex-1">
           <div className="text-lg font-bold uppercase tracking-wide text-[var(--color-text)]">
-            JENSEN AUTOMATIONS TECHNOLOGY LIMITED
+            {company?.name?.toUpperCase() || ""}
           </div>
           <div className="mt-2 text-sm text-[var(--color-text-muted)] space-y-1">
-            <div>TIN: 168-782-179 | VRN: 40-315066-K</div>
-            <div>21493 Dar es salaam, TANZANIA</div>
-            <div>Tel: +255745205050 | info@jensenintl.com</div>
+            <div>{company?.vat || ""}</div>
+            <div>{[company?.street, company?.street2, company?.city, company?.zip].filter(Boolean).join(", ")}</div>
+            <div>{[company?.phone, company?.email].filter(Boolean).join(" | ")}</div>
           </div>
         </div>
       </div>

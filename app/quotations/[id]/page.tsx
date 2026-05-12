@@ -7,7 +7,9 @@ import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOr
 import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
 import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { fetchProducts, fetchCustomerById, searchPartners } from "@/lib/odoo/partner";
+import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import type { ResPartner } from "@/types/odoo";
+import type { BankDetail, CompanySettings } from "@/types/settings";
 import { computeLineAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -42,6 +44,8 @@ export default function QuotationDetailPage() {
   const [newProduct, setNewProduct] = useState(0);
   const [newQty, setNewQty] = useState(1);
   const [partnerAddress, setPartnerAddress] = useState("");
+  const [banks, setBanks] = useState<BankDetail[]>([]);
+  const [company, setCompany] = useState<CompanySettings | null>(null);
 
   const [showCustomerEditModal, setShowCustomerEditModal] = useState(false);
   const [customerQuery, setCustomerQuery] = useState("");
@@ -54,17 +58,21 @@ export default function QuotationDetailPage() {
   const loadOrder = useCallback(async () => {
     try {
       setLoading(true);
-      const [so, lines] = await Promise.all([
+      const [so, lines, company] = await Promise.all([
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
+        fetchCompanySettings(),
       ]);
       const [purchaseOrders, partner] = await Promise.all([
         fetchPurchaseOrdersByOrigin(so.name),
         fetchCustomerById(so.partner_id[0])
       ]);
+      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
+      setBanks(bankData);
+      setCompany(company);
       if (partner) {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
@@ -106,7 +114,7 @@ export default function QuotationDetailPage() {
 
   const lineItems: LineItem[] = rawLines.map((l) => {
     const label = l.product_id?.[1] || "";
-    const match = label.match(/^\\[(.*?)\\]/);
+    const match = label.match(/^\[(.*?)\]/);
     return {
       id: l.id,
       productId: l.product_id?.[0],
@@ -347,6 +355,7 @@ export default function QuotationDetailPage() {
         partnerAddress={partnerAddress}
         date={order.date_order}
         expiryDate={order.validity_date}
+        company={company}
         onEditCustomer={isDraft ? () => setShowCustomerEditModal(true) : undefined}
       />
 
@@ -366,14 +375,14 @@ export default function QuotationDetailPage() {
 
       {order.note && (
         <Card>
-          <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <h3 className="mb-2 text-sm font-bold text-[var(--color-text)] uppercase tracking-wider">
             Terms & Conditions
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(/<\/?p[^>]*>/gi, '').trim()}</p>
         </Card>
       )}
 
-      <BankDetails />
+      <BankDetails banks={banks} />
 
       <Modal
         open={showAddLine}

@@ -5,16 +5,16 @@ import type { LineItem } from "@/types/documents";
 import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
 import { formatCurrency } from "@/lib/utils";
 
-const DEFAULT_BANK = { bank_name: "CRDB BANK", acc_holder_name: "Jensen Automations Technology Limited", x_tzs_account: "015C001GAEC00", x_usd_account: "025C001GAEC00", bank_bic: "CORUTZTZ", x_branch: "UDSM Branch", x_sort_code: "3386" } as unknown as BankDetail;
+const DEFAULT_BANK = { bank_name: "", acc_holder_name: "", x_tzs_account: "", x_usd_account: "", bank_bic: "", x_branch: "", x_sort_code: "" } as unknown as BankDetail;
 
 function buildCompanyAddress(company: CompanySettings | null | undefined) {
-  if (!company) return "21493 Dar es salaam, TANZANIA";
-  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+  if (!company) return "";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "";
 }
 
 function buildCompanyTin(company: CompanySettings | null | undefined) {
-  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
-  return company.vat || "N/A";
+  if (!company) return "";
+  return company.vat || "";
 }
 
 interface PurchaseOrderPDFProps {
@@ -54,7 +54,7 @@ export function PurchaseOrderPDFPage({
 }: PurchaseOrderPDFProps) {
   const logoSrc = getLogoSrc(company?.logo);
 
-  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyName = company?.name?.toUpperCase() || "";
   const companyAddress = buildCompanyAddress(company);
   const companyTin = buildCompanyTin(company);
   const bankData = banks?.[0] || DEFAULT_BANK;
@@ -77,7 +77,7 @@ export function PurchaseOrderPDFPage({
               <View style={pdfStyles.companyInfo}>
                 <Text>{companyTin}</Text>
                 <Text>{companyAddress}</Text>
-                <Text>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
+                <Text>Tel: {company?.phone} {company?.email && `| ${company.email}`}</Text>
               </View>
             </View>
           </View>
@@ -157,15 +157,37 @@ export function PurchaseOrderPDFPage({
           <Text style={pdfStyles.bankTitle}>Bank Details</Text>
           <View style={pdfStyles.bankGrid}>
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text></Text>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Bank:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Beneficiary:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>TZS Account:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>USD Account:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text>
+              </View>
             </View>
+            <View style={pdfStyles.bankDivider} />
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text></Text>
-              <Text><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text></Text>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Swift/BIC:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Branch:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Sort Code:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text>
+              </View>
             </View>
           </View>
         </View>

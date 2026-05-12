@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
 import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
+import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { fetchCustomerById } from "@/lib/odoo/partner";
@@ -17,6 +18,7 @@ import { BankDetails } from "@/components/documents/BankDetails";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { SaleOrder, SaleOrderLine } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
+import type { BankDetail, CompanySettings } from "@/types/settings";
 import { ArrowLeft, Printer, ExternalLink } from "lucide-react";
 
 export default function ProformaDetailPage() {
@@ -27,22 +29,28 @@ export default function ProformaDetailPage() {
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
   const [purchaseOrderIds, setPurchaseOrderIds] = useState<number[]>([]);
   const [partnerAddress, setPartnerAddress] = useState("");
+  const [banks, setBanks] = useState<BankDetail[]>([]);
+  const [company, setCompany] = useState<CompanySettings | null>(null);
   const [loading, setLoading] = useState(true);
 
   const loadOrder = useCallback(async () => {
     try {
       setLoading(true);
-      const [so, lines] = await Promise.all([
+      const [so, lines, company] = await Promise.all([
         fetchQuotationById(id),
         fetchSaleOrderLines(id),
+        fetchCompanySettings(),
       ]);
       const [purchaseOrders, partner] = await Promise.all([
         fetchPurchaseOrdersByOrigin(so.name),
         fetchCustomerById(so.partner_id[0])
       ]);
+      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
+      setBanks(bankData);
+      setCompany(company);
       if (partner) {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
@@ -75,7 +83,7 @@ export default function ProformaDetailPage() {
 
   const lineItems: LineItem[] = rawLines.map((l) => {
     const label = l.product_id?.[1] || "";
-    const match = label.match(/^\\[(.*?)\\]/);
+    const match = label.match(/^\[(.*?)\]/);
     return {
       id: l.id,
       productId: l.product_id?.[0],
@@ -175,6 +183,7 @@ export default function ProformaDetailPage() {
         partnerAddress={partnerAddress}
         date={order.date_order}
         expiryDate={order.validity_date}
+        company={company}
       />
 
       <LineItemsTable lines={lineItems} />
@@ -187,14 +196,14 @@ export default function ProformaDetailPage() {
 
       {order.note && (
         <Card>
-          <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <h3 className="mb-2 text-sm font-bold text-[var(--color-text)] uppercase tracking-wider">
             Terms & Conditions
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.note?.replace(/<\/?p[^>]*>/gi, '').trim()}</p>
         </Card>
       )}
 
-      <BankDetails />
+      <BankDetails banks={banks} />
     </div>
   );
 }

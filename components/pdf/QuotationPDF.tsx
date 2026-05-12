@@ -5,16 +5,16 @@ import type { LineItem } from "@/types/documents";
 import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
 import { formatCurrency } from "@/lib/utils";
 
-const DEFAULT_BANK = { bank_name: "CRDB BANK", acc_holder_name: "Jensen Automations Technology Limited", x_tzs_account: "015C001GAEC00", x_usd_account: "025C001GAEC00", bank_bic: "CORUTZTZ", x_branch: "UDSM Branch", x_sort_code: "3386" } as unknown as BankDetail;
+const DEFAULT_BANK = { bank_name: "", acc_holder_name: "", x_tzs_account: "", x_usd_account: "", bank_bic: "", x_branch: "", x_sort_code: "" } as unknown as BankDetail;
 
 function buildCompanyAddress(company: CompanySettings | null | undefined) {
-  if (!company) return "21493 Dar es salaam, TANZANIA";
-  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "N/A";
+  if (!company) return "";
+  return [company.street, company.street2, company.city, company.zip].filter(Boolean).join(", ") || "";
 }
 
 function buildCompanyTin(company: CompanySettings | null | undefined) {
-  if (!company) return "TIN: 168-782-179 | VRN: 40-315066-K";
-  return company.vat || "N/A";
+  if (!company) return "";
+  return company.vat || "";
 }
 
 interface QuotationPDFProps {
@@ -64,7 +64,7 @@ export function QuotationPDFPage({
   const discount = lines.reduce((s, l) => s + (l.quantity * l.unitPrice - l.subtotal), 0);
   const logoSrc = getLogoSrc(company?.logo);
 
-  const companyName = company?.name?.toUpperCase() || "JENSEN AUTOMATIONS TECHNOLOGY LIMITED";
+  const companyName = company?.name?.toUpperCase() || "";
   const companyAddress = buildCompanyAddress(company);
   const companyTin = buildCompanyTin(company);
   const bankData = banks?.[0] || DEFAULT_BANK;
@@ -87,7 +87,7 @@ export function QuotationPDFPage({
               <View style={pdfStyles.companyInfo}>
                 <Text style={pdfStyles.companyInfoItem}>{companyTin}</Text>
                 <Text style={pdfStyles.companyInfoItem}>{companyAddress}</Text>
-                <Text style={pdfStyles.companyInfoItem}>Tel: {company?.phone || "+255745205050"} | {company?.email || "info@jensenintl.com"}</Text>
+                <Text style={pdfStyles.companyInfoItem}>Tel: {company?.phone} {company?.email && `| ${company.email}`}</Text>
               </View>
             </View>
           </View>
@@ -198,15 +198,37 @@ export function QuotationPDFPage({
           <Text style={pdfStyles.bankTitle}>Bank Details</Text>
           <View style={pdfStyles.bankGrid}>
             <View style={pdfStyles.bankCol}>
-              <Text><Text style={pdfStyles.bankLabel}>Bank: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text></Text>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Beneficiary: </Text><Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text></Text>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>TZS Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text></Text>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>USD Account: </Text><Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text></Text>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Bank:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Beneficiary:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>TZS Account:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>USD Account:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text>
+              </View>
             </View>
+            <View style={pdfStyles.bankDivider} />
             <View style={pdfStyles.bankCol}>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Swift: </Text><Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text></Text>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Branch: </Text><Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text></Text>
-              <Text style={pdfStyles.bankItem}><Text style={pdfStyles.bankLabel}>Sort Code: </Text><Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text></Text>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Swift/BIC:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Branch:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text>
+              </View>
+              <View style={pdfStyles.bankItem}>
+                <Text style={pdfStyles.bankLabel}>Sort Code:</Text>
+                <Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -214,7 +236,7 @@ export function QuotationPDFPage({
         {notes && (
           <View style={{ padding: 16, borderTopWidth: 1, borderColor: colors.border }}>
             <Text style={pdfStyles.infoLabel}>Terms & Conditions</Text>
-            <Text style={{ fontSize: 8, marginTop: 4, lineHeight: 1.5 }}>{notes}</Text>
+            <Text style={{ fontSize: 8, marginTop: 4, lineHeight: 1.5 }}>{notes.replace(/<\/?p[^>]*>/gi, "").trim()}</Text>
           </View>
         )}
 

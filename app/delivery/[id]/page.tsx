@@ -6,12 +6,13 @@ import Link from "next/link";
 import { fetchDeliveryById, fetchStockMoves, validateDelivery } from "@/lib/odoo/stock";
 import { odooCall } from "@/lib/odoo/client";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
-import type { StockPicking, StockMove, SaleOrder } from "@/types/odoo";
+import type { StockPicking, StockMove, SaleOrder, ResPartner } from "@/types/odoo";
 import type { DocumentType } from "@/types/documents";
 import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 
@@ -24,6 +25,7 @@ export default function DeliveryDetailPage() {
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
   const [originSoId, setOriginSoId] = useState<number | null>(null);
+  const [customer, setCustomer] = useState<ResPartner | null>(null);
 
   const canValidate =
     picking?.state === "assigned" ||
@@ -38,6 +40,16 @@ export default function DeliveryDetailPage() {
       ]);
       setPicking(p);
       setMoves(m);
+
+      // Fetch customer details
+      if (p.partner_id?.[0]) {
+        try {
+          const customerData = await fetchCustomerById(p.partner_id[0]);
+          setCustomer(customerData);
+        } catch (err) {
+          console.error("Failed to fetch customer:", err);
+        }
+      }
 
       if (p.origin) {
         try {
@@ -174,9 +186,24 @@ export default function DeliveryDetailPage() {
         <div className="grid grid-cols-2 gap-6 p-6">
           <div>
             <p className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider mb-1">
-              Customer
+              Customer Details
             </p>
-            <p className="text-base font-semibold text-[var(--color-text)]">{picking.partner_id[1]}</p>
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-[var(--color-text)]">{picking.partner_id[1]}</p>
+              {customer && (
+                <div className="text-sm text-[var(--color-text-muted)]">
+                  {customer.street && <div>{customer.street}</div>}
+                  {(customer.street2 || customer.city || (customer.state_id && customer.state_id[1]) || customer.zip) && (
+                    <div>
+                      {[customer.street2, customer.city, customer.state_id && customer.state_id[1], customer.zip].filter(Boolean).join(", ")}
+                    </div>
+                  )}
+                  {customer.country_id && customer.country_id[1] && <div>{customer.country_id[1]}</div>}
+                  {customer.phone && <div>Phone: {customer.phone}</div>}
+                  {customer.email && <div>Email: {customer.email}</div>}
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-1 text-right">
             <div>
@@ -212,6 +239,9 @@ export default function DeliveryDetailPage() {
               <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-8">
                 #
               </th>
+              <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-32">
+                Part No
+              </th>
               <th className="px-4 py-3 text-left text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider">
                 Product
               </th>
@@ -233,6 +263,13 @@ export default function DeliveryDetailPage() {
                 className={`border-b border-[var(--color-border-light)] ${idx % 2 === 1 ? "bg-[var(--color-row-alt)]" : ""}`}
               >
                 <td className="px-4 py-3 text-[var(--color-text-muted)]">{idx + 1}</td>
+                <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs font-medium">
+                  {(() => {
+                    const label = move.product_id?.[1] || "";
+                    const match = label.match(/^\[(.*?)\]/);
+                    return match ? match[1] : "-";
+                  })()}
+                </td>
                 <td className="px-4 py-3 text-[var(--color-text)]">
                   {move.product_id?.[1] || move.name}
                 </td>
@@ -245,7 +282,7 @@ export default function DeliveryDetailPage() {
             ))}
             {moves.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
+                <td colSpan={6} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
                   No stock moves
                 </td>
               </tr>

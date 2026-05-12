@@ -9,6 +9,7 @@ const COMPANY_FIELDS = [
 
 const BANK_FIELDS = [
   "id", "bank_name", "acc_number", "acc_holder_name", "bank_bic",
+  "x_tzs_account", "x_usd_account", "x_branch", "x_sort_code",
 ];
 
 const PDF_COLOR_KEYS = [
@@ -76,10 +77,10 @@ export async function fetchBankDetails(companyPartnerId: number): Promise<BankDe
     acc_number: (r.acc_number as string) || "",
     acc_holder_name: (r.acc_holder_name as string) || "",
     bank_bic: (r.bank_bic as string) || "",
-    x_tzs_account: "",
-    x_usd_account: "",
-    x_branch: "",
-    x_sort_code: "",
+    x_tzs_account: (r.x_tzs_account as string) || "",
+    x_usd_account: (r.x_usd_account as string) || "",
+    x_branch: (r.x_branch as string) || "",
+    x_sort_code: (r.x_sort_code as string) || "",
   }));
 }
 

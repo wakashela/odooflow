@@ -7,6 +7,7 @@ import { fetchPurchaseOrderById, fetchPurchaseOrderLines, confirmPurchaseOrder }
 import { odooCall } from "@/lib/odoo/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { fetchCustomerById } from "@/lib/odoo/partner";
+import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -18,6 +19,7 @@ import { BankDetails } from "@/components/documents/BankDetails";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { PurchaseOrder, PurchaseOrderLine, SaleOrder } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
+import type { BankDetail, CompanySettings } from "@/types/settings";
 import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 
 export default function PurchaseOrderDetailPage() {
@@ -30,15 +32,18 @@ export default function PurchaseOrderDetailPage() {
   const [confirming, setConfirming] = useState(false);
   const [originSoId, setOriginSoId] = useState<number | null>(null);
   const [partnerAddress, setPartnerAddress] = useState("");
+  const [banks, setBanks] = useState<BankDetail[]>([]);
+  const [company, setCompany] = useState<CompanySettings | null>(null);
 
   const isDraft = order?.state === "draft";
 
   const loadOrder = useCallback(async () => {
     try {
       setLoading(true);
-      const [po, lines] = await Promise.all([
+      const [po, lines, company] = await Promise.all([
         fetchPurchaseOrderById(id),
         fetchPurchaseOrderLines(id),
+        fetchCompanySettings(),
       ]);
       setOrder(po);
       setRawLines(lines);
@@ -47,6 +52,10 @@ export default function PurchaseOrderDetailPage() {
       if (partner) {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
+
+      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
+      setBanks(bankData);
+      setCompany(company);
 
       if (po.origin) {
         try {
@@ -99,7 +108,7 @@ export default function PurchaseOrderDetailPage() {
 
   const lineItems: LineItem[] = rawLines.map((l) => {
     const label = l.product_id?.[1] || "";
-    const match = label.match(/^\\[(.*?)\\]/);
+    const match = label.match(/^\[(.*?)\]/);
     return {
       id: l.id,
       productId: l.product_id?.[0],
@@ -175,6 +184,7 @@ export default function PurchaseOrderDetailPage() {
         date={order.date_order}
         expiryDate={order.date_planned}
         origin={order.origin}
+        company={company}
       />
 
       <LineItemsTable lines={lineItems} />
@@ -187,14 +197,14 @@ export default function PurchaseOrderDetailPage() {
 
       {order.notes && (
         <Card>
-          <h3 className="mb-2 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
+          <h3 className="mb-2 text-sm font-bold text-[var(--color-text)] uppercase tracking-wider">
             Notes
           </h3>
-          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.notes?.replace(new RegExp('<\\\\/?p[^>]*>', 'g'), '')}</p>
+          <p className="text-sm text-[var(--color-text)] whitespace-pre-wrap">{order.notes?.replace(/<\/?p[^>]*>/gi, '').trim()}</p>
         </Card>
       )}
 
-      <BankDetails />
+      <BankDetails banks={banks} />
     </div>
   );
 }

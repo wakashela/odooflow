@@ -42,7 +42,8 @@ def load_env(path: str) -> dict:
             if not line or line.startswith("#") or "=" not in line:
                 continue
             key, _, val = line.partition("=")
-            env[key.strip()] = val.strip()
+            val = val.strip().strip('"').strip("'")
+            env[key.strip()] = val
     return env
 
 
@@ -233,7 +234,9 @@ def install_module(sock_url: str, uid: int, db: str, password: str, module_name:
 # ----------------------------------------------------------------------
 def main():
     root = get_project_root()
-    env = load_env(os.path.join(root, ".env.local"))
+    env = {}
+    for env_file in [".env", ".env.local"]:
+        env.update(load_env(os.path.join(root, env_file)))
 
     ODOO_URL = env.get("ODOO_URL", "").rstrip("/")
     ODOO_DB = env.get("ODOO_DB", "")
@@ -293,12 +296,17 @@ def main():
     # ------------------------------------------------------------------
     # Step 3 — Create custom bank fields
     # ------------------------------------------------------------------
-    step(3, "Create custom bank fields on res.partner.bank")
+    step(3, "Create custom fields")
+
     bank_fields = [
         ("x_tzs_account", "TZS Account"),
         ("x_usd_account", "USD Account"),
         ("x_branch", "Branch"),
         ("x_sort_code", "Sort Code"),
+    ]
+
+    partner_fields = [
+        ("x_tin", "TIN"),
     ]
     fields_ok = True
     for fname, flabel in bank_fields:
@@ -315,6 +323,23 @@ def main():
             fields_ok = False
 
     results.append(("Custom bank fields", fields_ok, ""))
+
+    # Create custom fields on res.partner
+    partner_ok = True
+    for fname, flabel in partner_fields:
+        try:
+            if field_exists(ODOO_URL, uid, ODOO_DB, ODOO_PASSWORD,
+                            "res.partner", fname):
+                ok(f"Field '{fname}' already exists — skipping")
+            else:
+                create_field(ODOO_URL, uid, ODOO_DB, ODOO_PASSWORD,
+                             "res.partner", fname, flabel)
+                ok(f"Field '{fname}' created on res.partner")
+        except Exception as e:
+            warn(f"Could not create '{fname}': {e}")
+            partner_ok = False
+
+    results.append(("Custom partner fields", partner_ok, ""))
 
     # ------------------------------------------------------------------
     # Step 4 — Set company details
