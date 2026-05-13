@@ -1,5 +1,14 @@
 # OdooFlow
 
+[![Deploy to Vercel](https://github.com/anomalyco/odooflow/actions/workflows/deploy.yml/badge.svg)](https://github.com/anomalyco/odooflow/actions/workflows/deploy.yml)
+[![Test](https://github.com/anomalyco/odooflow/actions/workflows/test.yml/badge.svg)](https://github.com/anomalyco/odooflow/actions/workflows/test.yml)
+
+### Production Deployments
+[![ipatechs](https://img.shields.io/website?label=ipatechs&url=https%3A%2Fipatechs.vercel.app)](https://ipatechs.vercel.app)
+[![jensen](https://img.shields.io/website?label=jensen&url=https%3A%2Fjensen-odooflow.vercel.app)](https://jensen-odooflow.vercel.app)
+
+---
+
 A Next.js application that wraps Odoo business documents behind a custom UI — Quotations, Invoices, Purchase Orders, Delivery Notes, and Packing Lists — with live PDF generation and branded document output.
 
 ## Features
@@ -103,6 +112,210 @@ Open [http://localhost:3000](http://localhost:3000) and log in with your Odoo cr
 
 ---
 
+## 🚀 CI/CD Multi-Client Deployment
+
+OdooFlow uses GitHub Actions to automatically deploy to multiple Vercel projects when code is pushed to `main`.
+
+### Active Deployments
+
+| Client | Status | URL |
+|--------|--------|-----|
+| ipatechs | ✅ Active | https://ipatechs-odooflow.vercel.app |
+| jensen | ✅ Active | https://jensen-odooflow.vercel.app |
+
+### How It Works
+
+```
+Push to main branch
+        ↓
+GitHub Actions triggers
+        ↓
+Test job runs (lint + type check)
+        ↓
+Deploy jobs run in parallel
+        ↓
+All clients deploy automatically 🎉
+```
+
+---
+
+## ➕ Adding a New Client
+
+To onboard a new client (e.g., `acme`) from this template repo:
+
+### Step 1: Create Client Environment File
+
+Create a new `.env` file for the client:
+
+```bash
+cp .env.example .env.acme
+```
+
+Fill in the client's Odoo credentials and company details:
+
+```env
+# .env.acme
+ODOO_URL=https://odoo-acme.cloudclusters.net
+ODOO_DB=acme_db
+ODOO_USER=admin
+ODOO_PASSWORD=admin
+
+# Company details
+ODOO_COMPANY_NAME=ACME SOLUTIONS LTD
+ODOO_COMPANY_TIN=123-456-789
+ODOO_COMPANY_VRN=40-123456-K
+ODOO_COMPANY_ADDRESS=123 Business Street, Dar es Salaam
+ODOO_COMPANY_PHONE=+255700000000
+ODOO_COMPANY_EMAIL=info@acme.com
+ODOO_COMPANY_WEBSITE=www.acme.com
+ODOO_COMPANY_CITY=Dar es Salaam
+ODOO_COMPANY_COUNTRY=Tanzania
+
+# Brand colors (hex values)
+ODOOFLOW_PDF_PRIMARY=#0A9688
+ODOOFLOW_PDF_PRIMARY_DARK=#00796B
+ODOOFLOW_PDF_ACCENT=#F57F17
+```
+
+> **Naming convention:** Always use lowercase for client names in filenames (`.env.acme`, not `.env.ACME`).
+
+### Step 2: Add GitHub Secrets
+
+Use the `gh` CLI to add secrets for the new client:
+
+```bash
+# Set all secrets for the new client (replace with actual values)
+gh secret set ACME_ODOO_URL --body "https://odoo-acme.cloudclusters.net" --repo wakashela/odooflow
+gh secret set ACME_ODOO_DB --body "acme_db" --repo wakashela/odooflow
+gh secret set ACME_ODOO_USER --body "admin" --repo wakashela/odooflow
+gh secret set ACME_ODOO_PASSWORD --body "admin" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_NAME --body "ACME SOLUTIONS LTD" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_TIN --body "123-456-789" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_VRN --body "40-123456-K" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_ADDRESS --body "123 Business Street, Dar es Salaam" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_PHONE --body "+255700000000" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_EMAIL --body "info@acme.com" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_WEBSITE --body "www.acme.com" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_CITY --body "Dar es Salaam" --repo wakashela/odooflow
+gh secret set ACME_ODOO_COMPANY_COUNTRY --body "Tanzania" --repo wakashela/odooflow
+gh secret set ACME_ODOOFLOW_PDF_PRIMARY --body "#0A9688" --repo wakashela/odooflow
+gh secret set ACME_ODOOFLOW_PDF_PRIMARY_DARK --body "#00796B" --repo wakashela/odooflow
+gh secret set ACME_ODOOFLOW_PDF_ACCENT --body "#F57F17" --repo wakashela/odooflow
+```
+
+**Or use the bulk setup script:**
+
+```bash
+# Create a script from your .env.acme file
+source .env.acme
+CLIENT="acme"
+REPO="wakashela/odooflow"
+
+for var in ODOO_URL ODOO_DB ODOO_USER ODOO_PASSWORD ODOO_COMPANY_NAME ODOO_COMPANY_TIN ODOO_COMPANY_VRN ODOO_COMPANY_ADDRESS ODOO_COMPANY_PHONE ODOO_COMPANY_EMAIL ODOO_COMPANY_WEBSITE ODOO_COMPANY_CITY ODOO_COMPANY_COUNTRY ODOOFLOW_PDF_PRIMARY ODOOFLOW_PDF_PRIMARY_DARK ODOOFLOW_PDF_ACCENT; do
+  value="${!var}"
+  secret_name="${CLIENT}_${var}"
+  echo "Setting $secret_name..."
+  echo "$value" | gh secret set "$secret_name" --repo "$REPO"
+done
+```
+
+### Step 3: Update Deployment Workflow
+
+Edit `.github/workflows/deploy.yml` and add the new client to the matrix:
+
+```yaml
+strategy:
+  matrix:
+    include:
+      - client: ipatechs
+        project_name: ipatechs-odooflow
+      - client: jensen
+        project_name: jensen-odooflow
+      - client: acme        # ← ADD THIS
+        project_name: acme-odooflow  # ← ADD THIS
+```
+
+### Step 4: Create Vercel Project
+
+```bash
+# Using Vercel CLI (must be logged in)
+vercel projects add acme-odooflow
+
+# Or via the Vercel Dashboard:
+# 1. Go to https://vercel.com/new
+# 2. Import your GitHub repository
+# 3. Set project name to: acme-odooflow
+# 4. Framework: Next.js
+# 5. Deploy (first deploy can be manual)
+```
+
+### Step 5: Deploy
+
+Push the workflow changes to trigger deployment for all clients:
+
+```bash
+git add .github/workflows/deploy.yml .env.acme
+git commit -m "feat: add acme client to CI/CD"
+git push origin main
+```
+
+The GitHub Action will automatically:
+1. Run tests (lint + type check)
+2. Deploy to `ipatechs-odooflow.vercel.app`
+3. Deploy to `jensen-odooflow.vercel.app`
+4. Deploy to `acme-odooflow.vercel.app` 🎉
+
+### Client Checklist
+
+- [ ] Create `.env.{client}` file with all credentials
+- [ ] Add all `{CLIENT}_*` secrets to GitHub
+- [ ] Add client to deploy matrix in `.github/workflows/deploy.yml`
+- [ ] Create Vercel project: `{client}-odooflow`
+- [ ] Push changes to trigger deployment
+- [ ] Verify deployment at `https://{client}-odooflow.vercel.app`
+
+### Troubleshooting New Clients
+
+**"Project not found" error:**
+- Make sure the Vercel project exists with the exact name used in the workflow
+- Check that `VERCEL_TOKEN` and `VERCEL_ORG_ID` secrets are set
+
+**Environment variables not working:**
+- Verify secret names match exactly: `{CLIENT}_ODOO_URL` (uppercase client name)
+- Check the `.env.{client}` file has all required variables
+
+**Deployment succeeds but app shows errors:**
+- Verify Odoo credentials are correct
+- Check that the Odoo instance is accessible from Vercel's servers
+- Review the GitHub Actions logs for specific errors
+
+---
+
+## 🔧 CI/CD Architecture
+
+```
+Single GitHub Repository (wakashela/odooflow)
+                │
+                ├── .github/workflows/test.yml (Lint + Type Check)
+                └── .github/workflows/deploy.yml (Matrix Deployment)
+                            │
+                            ├── Client: ipatechs → ipatechs-odooflow.vercel.app
+                            ├── Client: jensen   → jensen-odooflow.vercel.app
+                            └── Client: acme     → acme-odooflow.vercel.app
+```
+
+### Required GitHub Secrets
+
+| Secret | Description | How to Get |
+|--------|-------------|------------|
+| `VERCEL_TOKEN` | Vercel API token | https://vercel.com/account/tokens |
+| `VERCEL_ORG_ID` | Vercel team/org ID | `vercel teams list` |
+| `{CLIENT}_ODOO_URL` | Odoo instance URL | From your Odoo host |
+| `{CLIENT}_ODOO_DB` | Database name | From Odoo |
+| `{CLIENT}_ODOO_*` | Other credentials | From `.env.{client}` |
+
+---
+
 ## Odoo Setup Guide
 
 ### Prerequisites
@@ -145,6 +358,12 @@ ODOO_COMPANY_VAT=TIN: 123-456-789
 ODOOFLOW_PDF_PRIMARY=#0A9688
 ODOOFLOW_PDF_PRIMARY_DARK=#00796B
 ODOOFLOW_PDF_ACCENT=#F57F17
+
+# Optional — client-specific assets
+# Set to match a folder name in public/assets/ (e.g., "jensen" or "ipatechs")
+# Assets in that folder (logo.png, logo-icon.ico) will be used automatically
+ODOOFLOW_CLIENT=jensen
+NEXT_PUBLIC_ODOOFLOW_CLIENT=jensen
 ```
 
 ### Manual Setup (Without the Script)

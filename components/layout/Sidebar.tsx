@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getLogoSrc } from "@/lib/assets";
 import { useAuthStore } from "@/store/authStore";
 import { logout } from "@/lib/odoo/auth";
 import { useRouter } from "next/navigation";
@@ -61,7 +62,7 @@ export function Sidebar() {
       <div className="h-[80px] flex items-center px-4">
         <div className="flex items-center gap-2 text-[var(--color-primary)] font-bold text-xl">
           <Image
-            src="/logo.png"
+            src={getLogoSrc()}
             alt="OdooFlow Logo"
             width={32}
             height={32}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/layout/AuthProvider";
 import { AppShell } from "@/components/layout/AppShell";
+import { getLogoIconSrc } from "@/lib/assets";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
   title: "OdooFlow",
   description: "Business document management portal",
   icons: {
-    icon: "/logo-icon.ico",
+    icon: getLogoIconSrc(),
   },
 };
 

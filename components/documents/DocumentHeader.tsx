@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDate } from "@/lib/utils";
+import { getLogoSrc } from "@/lib/assets";
 import type { CompanySettings } from "@/types/settings";
 
 interface DocumentHeaderProps {
@@ -30,7 +31,7 @@ export function DocumentHeader({
     <div className="rounded-xl border border-[var(--color-border)] bg-white overflow-hidden">
       <div className="flex items-start gap-4 p-6">
         <div className="w-[150px] h-[150px] flex items-center justify-center overflow-hidden rounded-md">
-          <img src="/logo.png" alt="Company logo" className="max-w-full max-h-full object-contain" />
+          <img src={getLogoSrc()} alt="Company logo" className="max-w-full max-h-full object-contain" />
         </div>
         <div className="flex-1">
           <div className="text-lg font-bold uppercase tracking-wide text-[var(--color-text)]">

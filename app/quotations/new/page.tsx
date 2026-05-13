@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createQuotation } from "@/lib/odoo/sale";
 import { fetchCustomers, fetchProducts, searchPartners, createCustomer, createProduct } from "@/lib/odoo/partner";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
+import { useSettingsStore } from "@/store/settingsStore";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -19,6 +20,7 @@ let nextLineId = -1;
 
 export default function NewQuotationPage() {
   const router = useRouter();
+  const { printSettings } = useSettingsStore();
   const [customers, setCustomers] = useState<ResPartner[]>([]);
   const [products, setProducts] = useState<ProductProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,6 +99,7 @@ export default function NewQuotationPage() {
       unitPrice: 0,
       discount: 0,
       subtotal: 0,
+      deliveryTime: "",
     };
     setLines([newLine, ...lines]);
   }
@@ -460,6 +463,16 @@ export default function NewQuotationPage() {
                   max={100}
                   step={0.1}
                 />
+                {printSettings.showDeliveryTimeInLine && (
+                  <Input
+                    label={`Delivery (${printSettings.deliveryTimeUnit})`}
+                    type="number"
+                    value={line.deliveryTime || ""}
+                    onChange={(e) => updateLine(line.id, "deliveryTime", e.target.value)}
+                    min={0}
+                    placeholder="0"
+                  />
+                )}
               </div>
               <button
                 onClick={() => removeLine(line.id)}
