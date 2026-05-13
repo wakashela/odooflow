@@ -1,5 +1,5 @@
 import { odooCall } from "./client";
-import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
+import type { CompanySettings, BankDetail, PdfColorSettings, PrintSettings } from "@/types/settings";
 
 const COMPANY_FIELDS = [
   "id", "name", "street", "street2", "city", "zip",
@@ -16,6 +16,12 @@ const PDF_COLOR_KEYS = [
   "odooflow.pdf.primary",
   "odooflow.pdf.primary_dark",
   "odooflow.pdf.accent",
+];
+
+const PRINT_SETTING_KEYS = [
+  "odooflow.print.enable_original_duplicate",
+  "odooflow.print.show_delivery_time_in_line",
+  "odooflow.print.delivery_time_unit",
 ];
 
 const DEFAULT_COLORS: PdfColorSettings = {
@@ -138,13 +144,55 @@ export async function writePdfColors(colors: PdfColorSettings): Promise<void> {
   }
 }
 
+export async function fetchPrintSettings(): Promise<PrintSettings> {
+  try {
+    const results = await odooCall<{ key: string; value: string }[]>("ir.config_parameter", "search_read", [[["key", "in", PRINT_SETTING_KEYS]]], {
+      fields: ["key", "value"],
+    });
+    const map: Record<string, string> = {};
+    for (const r of results) {
+      map[r.key] = r.value;
+    }
+    return {
+      enableOriginalDuplicate: map["odooflow.print.enable_original_duplicate"] === "true",
+      showDeliveryTimeInLine: map["odooflow.print.show_delivery_time_in_line"] === "true",
+      deliveryTimeUnit: (map["odooflow.print.delivery_time_unit"] as "days" | "weeks") || "days",
+    };
+  } catch {
+    return {
+      enableOriginalDuplicate: false,
+      showDeliveryTimeInLine: false,
+      deliveryTimeUnit: "days",
+    };
+  }
+}
+
+export async function writePrintSettings(settings: PrintSettings): Promise<void> {
+  const entries: [string, string][] = [
+    ["odooflow.print.enable_original_duplicate", settings.enableOriginalDuplicate.toString()],
+    ["odooflow.print.show_delivery_time_in_line", settings.showDeliveryTimeInLine.toString()],
+    ["odooflow.print.delivery_time_unit", settings.deliveryTimeUnit],
+  ];
+
+  for (const [key, value] of entries) {
+    const existing = await odooCall<number[]>("ir.config_parameter", "search", [[["key", "=", key]]], {});
+    if (existing.length > 0) {
+      await odooCall<boolean>("ir.config_parameter", "write", [[existing[0]], { value }], {});
+    } else {
+      await odooCall<number>("ir.config_parameter", "create", [{ key, value }], {});
+    }
+  }
+}
+
 export async function fetchAllSettings(): Promise<{
   company: CompanySettings | null;
   banks: BankDetail[];
   pdfColors: PdfColorSettings;
+  printSettings: PrintSettings;
 }> {
   const company = await fetchCompanySettings();
   const banks = company ? await fetchBankDetails(company.partner_id) : [];
   const pdfColors = await fetchPdfColors();
-  return { company, banks, pdfColors };
+  const printSettings = await fetchPrintSettings();
+  return { company, banks, pdfColors, printSettings };
 }

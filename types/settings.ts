@@ -33,8 +33,15 @@ export interface PdfColorSettings {
   accent: string;
 }
 
+export interface PrintSettings {
+  enableOriginalDuplicate: boolean;
+  showDeliveryTimeInLine: boolean;
+  deliveryTimeUnit: "days" | "weeks";
+}
+
 export interface AppSettings {
   company: CompanySettings | null;
   banks: BankDetail[];
   pdfColors: PdfColorSettings;
+  printSettings: PrintSettings;
 }

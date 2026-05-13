@@ -10,8 +10,9 @@ import {
   createBankDetail,
   deleteBankDetail,
   writePdfColors,
+  writePrintSettings,
 } from "@/lib/odoo/settings";
-import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
+import type { CompanySettings, BankDetail, PdfColorSettings, PrintSettings } from "@/types/settings";
 import {
   Building2,
   Landmark,
@@ -23,18 +24,20 @@ import {
   Loader2,
   Check,
   FileText,
+  Printer,
 } from "lucide-react";
 
-type Tab = "company" | "bank" | "pdf";
+type Tab = "company" | "bank" | "pdf" | "print";
 
 const TABS: { key: Tab; label: string; icon: typeof Building2 }[] = [
   { key: "company", label: "Company Details", icon: Building2 },
   { key: "bank", label: "Bank Details", icon: Landmark },
   { key: "pdf", label: "PDF Colors", icon: Palette },
+  { key: "print", label: "Print Settings", icon: Printer },
 ];
 
 export default function SettingsPage() {
-  const { company, banks, pdfColors, loading, setCompany, setBanks, setPdfColors, setLoading } =
+  const { company, banks, pdfColors, printSettings, loading, setCompany, setBanks, setPdfColors, setPrintSettings, setLoading } =
     useSettingsStore();
   const [activeTab, setActiveTab] = useState<Tab>("company");
   const [saving, setSaving] = useState(false);
@@ -46,6 +49,7 @@ export default function SettingsPage() {
   const [companyForm, setCompanyForm] = useState<Partial<CompanySettings>>({});
   const [bankForms, setBankForms] = useState<BankDetail[]>([]);
   const [colorForm, setColorForm] = useState<PdfColorSettings>(pdfColors);
+  const [printForm, setPrintForm] = useState<PrintSettings>(printSettings);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
@@ -54,15 +58,17 @@ export default function SettingsPage() {
       setCompany(data.company);
       setBanks(data.banks);
       setPdfColors(data.pdfColors);
+      setPrintSettings(data.printSettings);
       setCompanyForm(data.company || {});
       setBankForms(data.banks.length > 0 ? data.banks : [emptyBank()]);
       setColorForm(data.pdfColors);
+      setPrintForm(data.printSettings);
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [setCompany, setBanks, setPdfColors, setLoading]);
+  }, [setCompany, setBanks, setPdfColors, setPrintSettings, setLoading]);
 
   useEffect(() => {
     loadSettings();
@@ -203,6 +209,21 @@ export default function SettingsPage() {
     }
   };
 
+  // --- Print Settings handlers ---
+  const handlePrintSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      await writePrintSettings(printForm);
+      setPrintSettings(printForm);
+      showSaved();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // --- PDF Preview ---
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -325,6 +346,14 @@ export default function SettingsPage() {
               form={colorForm}
               onChange={setColorForm}
               onSave={handleColorSave}
+              saving={saving}
+            />
+          )}
+          {activeTab === "print" && (
+            <PrintSettingsTab
+              form={printForm}
+              onChange={setPrintForm}
+              onSave={handlePrintSave}
               saving={saving}
             />
           )}
@@ -556,6 +585,97 @@ function PdfColorTab({
         value={form.accent}
         onChange={(v) => onChange({ ...form, accent: v })}
       />
+      <SaveButton onClick={onSave} saving={saving} />
+    </div>
+  );
+}
+
+function PrintSettingsTab({
+  form,
+  onChange,
+  onSave,
+  saving,
+}: {
+  form: PrintSettings;
+  onChange: (f: PrintSettings) => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <label className="text-sm font-medium text-[var(--color-ink)]">Print Original & Duplicate</label>
+            <p className="text-xs text-[var(--color-muted-soft)] mt-0.5">
+              When enabled, PDF documents will be printed with "ORIGINAL" and "DUPLICATE" banners
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange({ ...form, enableOriginalDuplicate: !form.enableOriginalDuplicate })}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              form.enableOriginalDuplicate ? "bg-[var(--color-primary)]" : "bg-[var(--color-hairline)]"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                form.enableOriginalDuplicate ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <label className="text-sm font-medium text-[var(--color-ink)]">Show Delivery Time in Line Items</label>
+            <p className="text-xs text-[var(--color-muted-soft)] mt-0.5">
+              Display delivery time column in PDF line items table
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange({ ...form, showDeliveryTimeInLine: !form.showDeliveryTimeInLine })}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              form.showDeliveryTimeInLine ? "bg-[var(--color-primary)]" : "bg-[var(--color-hairline)]"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                form.showDeliveryTimeInLine ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </div>
+
+        {form.showDeliveryTimeInLine && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-[var(--color-ink)]">Delivery Time Unit</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deliveryTimeUnit"
+                  checked={form.deliveryTimeUnit === "days"}
+                  onChange={() => onChange({ ...form, deliveryTimeUnit: "days" })}
+                  className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm text-[var(--color-ink)]">Days</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="deliveryTimeUnit"
+                  checked={form.deliveryTimeUnit === "weeks"}
+                  onChange={() => onChange({ ...form, deliveryTimeUnit: "weeks" })}
+                  className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
+                />
+                <span className="text-sm text-[var(--color-ink)]">Weeks</span>
+              </label>
+            </div>
+          </div>
+        )}
+      </div>
       <SaveButton onClick={onSave} saving={saving} />
     </div>
   );

@@ -35,6 +35,7 @@ export interface LineItem {
   discount: number;
   subtotal: number;
   taxIds?: number[];
+  deliveryTime?: string;
 }
 
 export interface DocumentDetail {
