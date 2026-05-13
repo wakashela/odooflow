@@ -1,15 +1,16 @@
 import fs from "fs";
 import path from "path";
+import { getClientName } from "@/lib/assets";
 
 export function getLogoSrc(logoBase64?: string | false | null): string | null {
-  // If a base64 logo was passed (from Odoo res.company.logo), use it directly
   if (logoBase64) {
     return logoBase64.startsWith("data:") ? logoBase64 : `data:image/png;base64,${logoBase64}`;
   }
 
-  // Prefer embedding the file as a data URI when available on the filesystem
+  const client = getClientName();
+
   try {
-    const localPath = path.join(process.cwd(), "public", "logo.png");
+    const localPath = path.join(process.cwd(), "public", client ? `assets/${client}/logo.png` : "logo.png");
     if (fs.existsSync(localPath)) {
       const buff = fs.readFileSync(localPath);
       return `data:image/png;base64,${buff.toString("base64")}`;
@@ -18,17 +19,17 @@ export function getLogoSrc(logoBase64?: string | false | null): string | null {
     // ignore and try other fallbacks
   }
 
-  // If deployed on Vercel, construct a public URL using VERCEL_URL
   const vercelHost = process.env.VERCEL_URL;
   if (vercelHost) {
     const host = vercelHost.startsWith("http") ? vercelHost : `https://${vercelHost}`;
-    return `${host.replace(/\/$/, "")}/logo.png`;
+    const assetPath = client ? `/assets/${client}/logo.png` : "/logo.png";
+    return `${host.replace(/\/$/, "")}${assetPath}`;
   }
 
-  // Try common public site env vars
   const site = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL;
   if (site) {
-    return `${site.replace(/\/$/, "")}/logo.png`;
+    const assetPath = client ? `/assets/${client}/logo.png` : "/logo.png";
+    return `${site.replace(/\/$/, "")}${assetPath}`;
   }
 
   return null;

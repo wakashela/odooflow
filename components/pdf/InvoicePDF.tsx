@@ -100,11 +100,10 @@ export function InvoicePDFPage({
             <Text style={pdfStyles.infoLabel}>Bill To</Text>
             <Text style={pdfStyles.infoValue}>{partnerName}</Text>
             {partnerAddress && (
-              <Text style={pdfStyles.infoSubValue}>{partnerAddress}</Text>
+              <Text style={pdfStyles.infoAddress}>{partnerAddress}</Text>
             )}
           </View>
-          <View style={pdfStyles.infoCol}>
-            <Text style={pdfStyles.infoLabel}>Document Details</Text>
+          <View style={pdfStyles.infoColRight}>
             <Text style={pdfStyles.infoValue}>{documentName}</Text>
             <Text style={pdfStyles.infoSubValue}>Date: {date}</Text>
             {dueDate && (
@@ -114,7 +113,35 @@ export function InvoicePDFPage({
               <Text style={pdfStyles.infoSubValue}>Origin: {origin}</Text>
             )}
             {paymentState && !isProforma && (
-              <Text style={pdfStyles.infoSubValue}>Payment: {paymentState}</Text>
+              <View
+                style={[
+                  pdfStyles.paymentStatus,
+                  {
+                    backgroundColor:
+                      paymentState === "paid"
+                        ? "#E8F5E9"
+                        : paymentState === "partial"
+                          ? "#FFF3E0"
+                          : "#FFEBEE",
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    pdfStyles.paymentStatusText,
+                    {
+                      color:
+                        paymentState === "paid"
+                          ? "#2E7D32"
+                          : paymentState === "partial"
+                            ? "#E65100"
+                            : "#C62828",
+                    },
+                  ]}
+                >
+                  {paymentState === "paid" ? "PAID" : paymentState === "partial" ? "PARTIAL" : "NOT PAID"}
+                </Text>
+              </View>
             )}
             {paymentTerms && (
               <Text style={pdfStyles.infoSubValue}>Payment Terms: {paymentTerms}</Text>
@@ -132,11 +159,15 @@ export function InvoicePDFPage({
 
         <View style={pdfStyles.table}>
           <View style={pdfStyles.tableHeader}>
-            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>#</Text>
+            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>S/N</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colDesc]}>Description</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPart]}>Part No.</Text>
+            <View style={[pdfStyles.tableHeaderCell, pdfStyles.colDelivery]}>
+              <Text style={{ textAlign: "center" }}>DELIVERY</Text>
+              <Text style={{ textAlign: "center" }}>TIME</Text>
+            </View>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colQty]}>Qty</Text>
-            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Rate</Text>
+            <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Unit price</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colAmount]}>Amount (TZS)</Text>
           </View>
           {lines.map((line, idx) => (
@@ -150,6 +181,7 @@ export function InvoicePDFPage({
               <Text style={[pdfStyles.tableCell, pdfStyles.colNum]}>{idx + 1}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colDesc]}>{line.description}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPart]}>{line.partNumber || ""}</Text>
+              <Text style={[pdfStyles.tableCell, pdfStyles.colDelivery]}>{line.deliveryTime || ""}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colQty]}>{line.quantity}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPrice]}>
                 {formatCurrency(line.unitPrice)}
