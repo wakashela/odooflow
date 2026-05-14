@@ -161,16 +161,20 @@ export async function GET(
       pdfColors: pdfSettings.colors,
     };
 
-    const doc = copyType ? (
-      <Document>
-        <PurchaseOrderPDFPage {...pageProps} copyType={copyType} />
-      </Document>
-    ) : (
-      <Document>
-        <PurchaseOrderPDFPage {...pageProps} copyType="original" />
-        <PurchaseOrderPDFPage {...pageProps} copyType="duplicate" />
-      </Document>
-    );
+      const doc = copyType ? (
+        <Document>
+          <PurchaseOrderPDFPage {...pageProps} copyType={copyType} />
+        </Document>
+      ) : pdfSettings.printSettings.enableOriginalDuplicate ? (
+        <Document>
+          <PurchaseOrderPDFPage {...pageProps} copyType="original" />
+          <PurchaseOrderPDFPage {...pageProps} copyType="duplicate" />
+        </Document>
+      ) : (
+        <Document>
+          <PurchaseOrderPDFPage {...pageProps} />
+        </Document>
+      );
 
     const stream = await renderToStream(doc);
     const chunks: Buffer[] = [];

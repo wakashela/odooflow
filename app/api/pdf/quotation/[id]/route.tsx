@@ -166,16 +166,20 @@ export async function GET(
       pdfColors: pdfSettings.colors,
     };
 
-    const doc = copyParam ? (
-      <Document>
-        <QuotationPDFPage {...pageProps} copyType={copyParam as "original" | "duplicate"} />
-      </Document>
-    ) : (
-      <Document>
-        <QuotationPDFPage {...pageProps} copyType="original" />
-        <QuotationPDFPage {...pageProps} copyType="duplicate" />
-      </Document>
-    );
+      const doc = copyParam ? (
+        <Document>
+          <QuotationPDFPage {...pageProps} copyType={copyParam as "original" | "duplicate"} />
+        </Document>
+      ) : pdfSettings.printSettings.enableOriginalDuplicate ? (
+        <Document>
+          <QuotationPDFPage {...pageProps} copyType="original" />
+          <QuotationPDFPage {...pageProps} copyType="duplicate" />
+        </Document>
+      ) : (
+        <Document>
+          <QuotationPDFPage {...pageProps} />
+        </Document>
+      );
 
 const stream = await renderToStream(doc);
 const chunks: Buffer[] = [];

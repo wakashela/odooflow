@@ -129,16 +129,20 @@ export async function GET(
       banks: banks as unknown as import("@/types/settings").BankDetail[],
     };
 
-    const doc = copyType ? (
-      <Document>
-        <DeliveryNotePDFPage {...pageProps} copyType={copyType} />
-      </Document>
-    ) : (
-      <Document>
-        <DeliveryNotePDFPage {...pageProps} copyType="original" />
-        <DeliveryNotePDFPage {...pageProps} copyType="duplicate" />
-      </Document>
-    );
+      const doc = copyType ? (
+        <Document>
+          <DeliveryNotePDFPage {...pageProps} copyType={copyType} />
+        </Document>
+      ) : pdfSettings.printSettings.enableOriginalDuplicate ? (
+        <Document>
+          <DeliveryNotePDFPage {...pageProps} copyType="original" />
+          <DeliveryNotePDFPage {...pageProps} copyType="duplicate" />
+        </Document>
+      ) : (
+        <Document>
+          <DeliveryNotePDFPage {...pageProps} />
+        </Document>
+      );
 
     const stream = await renderToStream(doc);
     const chunks: Buffer[] = [];

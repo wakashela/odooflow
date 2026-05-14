@@ -166,16 +166,20 @@ export async function GET(
       pdfColors: pdfSettings.colors,
     };
 
-    const doc = copyParam ? (
-      <Document>
-        <InvoicePDFPage {...pageProps} copyType={copyParam as "original" | "duplicate"} />
-      </Document>
-    ) : (
-      <Document>
-        <InvoicePDFPage {...pageProps} copyType="original" />
-        <InvoicePDFPage {...pageProps} copyType="duplicate" />
-      </Document>
-    );
+      const doc = copyParam ? (
+        <Document>
+          <InvoicePDFPage {...pageProps} copyType={copyParam as "original" | "duplicate"} />
+        </Document>
+      ) : pdfSettings.printSettings.enableOriginalDuplicate ? (
+        <Document>
+          <InvoicePDFPage {...pageProps} copyType="original" />
+          <InvoicePDFPage {...pageProps} copyType="duplicate" />
+        </Document>
+      ) : (
+        <Document>
+          <InvoicePDFPage {...pageProps} />
+        </Document>
+      );
 
     const stream = await renderToStream(doc);
     const chunks: Buffer[] = [];

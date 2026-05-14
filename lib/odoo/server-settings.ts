@@ -1,4 +1,4 @@
-import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
+import type { CompanySettings, BankDetail, PdfColorSettings, PrintSettings } from "@/types/settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
 
@@ -117,9 +117,35 @@ export async function fetchPdfColorsServer(sessionId: string): Promise<PdfColorS
   }
 }
 
+const PRINT_SETTING_KEYS = [
+  "odooflow.print.enable_original_duplicate",
+  "odooflow.print.show_delivery_time_in_line",
+  "odooflow.print.delivery_time_unit",
+];
+
+export async function fetchPrintSettingsServer(sessionId: string): Promise<PrintSettings> {
+  try {
+    const results = await odooServerCall<{ key: string; value: string }[]>(
+      sessionId, "ir.config_parameter", "search_read",
+      [[["key", "in", PRINT_SETTING_KEYS]]],
+      { fields: ["key", "value"] }
+    );
+    const map: Record<string, string> = {};
+    for (const r of results) map[r.key] = r.value;
+    return {
+      enableOriginalDuplicate: map["odooflow.print.enable_original_duplicate"] === "true",
+      showDeliveryTimeInLine: map["odooflow.print.show_delivery_time_in_line"] === "true",
+      deliveryTimeUnit: (map["odooflow.print.delivery_time_unit"] as "days" | "weeks") || "days",
+    };
+  } catch {
+    return { enableOriginalDuplicate: false, showDeliveryTimeInLine: false, deliveryTimeUnit: "days" };
+  }
+}
+
 export async function fetchPdfSettings(sessionId: string) {
   const company = await fetchCompanySettingsServer(sessionId);
   const banks = company ? await fetchBankDetailsServer(sessionId, company.partner_id) : [];
   const colors = await fetchPdfColorsServer(sessionId);
-  return { company, banks, colors };
+  const printSettings = await fetchPrintSettingsServer(sessionId);
+  return { company, banks, colors, printSettings };
 }
