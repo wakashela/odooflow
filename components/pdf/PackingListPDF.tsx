@@ -1,9 +1,7 @@
 import { Document, Image, Page, Text, View } from "@react-pdf/renderer";
 import { buildPdfStyles, buildPdfColors } from "@/lib/pdf/styles";
 import { getLogoSrc } from "@/lib/pdf/logo";
-import type { CompanySettings, BankDetail, PdfColorSettings } from "@/types/settings";
-
-const DEFAULT_BANK = { bank_name: "", acc_holder_name: "", x_tzs_account: "", x_usd_account: "", bank_bic: "", x_branch: "", x_sort_code: "" } as unknown as BankDetail;
+import type { CompanySettings, PdfColorSettings } from "@/types/settings";
 
 function buildCompanyAddress(company: CompanySettings | null | undefined) {
   if (!company) return "";
@@ -35,7 +33,6 @@ interface PackingListPDFProps {
   weight?: string;
   copyType?: "original" | "duplicate";
   company?: CompanySettings | null;
-  banks?: BankDetail[];
   pdfColors?: PdfColorSettings;
 }
 
@@ -52,13 +49,11 @@ export function PackingListPDFPage({
   copyType,
   company,
   pdfColors,
-  banks,
 }: PackingListPDFProps) {
   const logoSrc = getLogoSrc(company?.logo);
 
   const companyName = company?.name?.toUpperCase() || "";
   const companyTin = buildCompanyTin(company);
-  const bankData = banks?.[0] || DEFAULT_BANK;
 
   const colors = buildPdfColors(pdfColors);
   const pdfStyles = buildPdfStyles(colors);
@@ -236,57 +231,6 @@ export function PackingListPDFPage({
                 <Text style={pdfStyles.bankLabel}>Total Weight</Text>
                 <Text style={pdfStyles.bankValue}>{weight}</Text>
               </View>
-            )}
-          </View>
-        </View>
-
-        <View style={pdfStyles.bankSection}>
-          <Text style={pdfStyles.bankTitle}>Bank Details</Text>
-          <View style={pdfStyles.bankGrid}>
-            <View style={pdfStyles.bankCol}>
-              <View style={pdfStyles.bankItem}>
-                <Text style={pdfStyles.bankLabel}>Bank:</Text>
-                <Text style={pdfStyles.bankValue}>{bankData.bank_name}</Text>
-              </View>
-              <View style={pdfStyles.bankItem}>
-                <Text style={pdfStyles.bankLabel}>Beneficiary:</Text>
-                <Text style={pdfStyles.bankValue}>{bankData.acc_holder_name}</Text>
-              </View>
-              {bankData.x_tzs_account && (
-                <View style={pdfStyles.bankItem}>
-                  <Text style={pdfStyles.bankLabel}>TZS Account:</Text>
-                  <Text style={pdfStyles.bankValue}>{bankData.x_tzs_account}</Text>
-                </View>
-              )}
-              {bankData.x_usd_account && (
-                <View style={pdfStyles.bankItem}>
-                  <Text style={pdfStyles.bankLabel}>USD Account:</Text>
-                  <Text style={pdfStyles.bankValue}>{bankData.x_usd_account}</Text>
-                </View>
-              )}
-            </View>
-            {bankData.bank_bic && (
-              <>
-                <View style={pdfStyles.bankDivider} />
-                <View style={pdfStyles.bankCol}>
-                  <View style={pdfStyles.bankItem}>
-                    <Text style={pdfStyles.bankLabel}>Swift/BIC:</Text>
-                    <Text style={pdfStyles.bankValue}>{bankData.bank_bic}</Text>
-                  </View>
-                  {bankData.x_branch && (
-                    <View style={pdfStyles.bankItem}>
-                      <Text style={pdfStyles.bankLabel}>Branch:</Text>
-                      <Text style={pdfStyles.bankValue}>{bankData.x_branch}</Text>
-                    </View>
-                  )}
-                  {bankData.x_sort_code && (
-                    <View style={pdfStyles.bankItem}>
-                      <Text style={pdfStyles.bankLabel}>Sort Code:</Text>
-                      <Text style={pdfStyles.bankValue}>{bankData.x_sort_code}</Text>
-                    </View>
-                  )}
-                </View>
-              </>
             )}
           </View>
         </View>

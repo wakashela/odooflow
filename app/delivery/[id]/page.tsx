@@ -154,7 +154,7 @@ export default function DeliveryDetailPage() {
 
   const completedSteps: DocumentType[] = [
     "quotation", "proforma", "purchase_order", "invoice",
-    ...(picking.state === "done" ? ["packing_list" as DocumentType] : []),
+    ...(picking.state === "done" ? ["delivery" as DocumentType, "packing_list" as DocumentType] : []),
   ];
 
   return (
@@ -216,7 +216,7 @@ export default function DeliveryDetailPage() {
 
       <WorkflowBar currentType="delivery" completed={completedSteps} />
 
-      {(picking.origin || originSoId || invoice) && (
+      {(picking.origin || originSoId || invoice || picking.state === "done") && (
         <Card>
           <h3 className="mb-3 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Related Documents
@@ -246,12 +246,14 @@ export default function DeliveryDetailPage() {
                 </span>
               </Link>
             )}
-            <Link href={`/api/pdf/packing-list/${id}`} target="_blank">
-              <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
-                <Printer size={14} />
-                Packing List PDF
-              </span>
-            </Link>
+            {picking.state === "done" && (
+              <Link href={`/packing-list/${id}`}>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
+                  <ExternalLink size={14} />
+                  Packing List {picking.name}
+                </span>
+              </Link>
+            )}
           </div>
         </Card>
       )}
