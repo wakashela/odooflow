@@ -60,7 +60,7 @@ jobs:
 
       - name: Pull Vercel Project Info
         run: |
-          vercel link --yes --token=${{ env.VERCEL_TOKEN }} --project=${{ matrix.project_name }} --org=${{ env.VERCEL_ORG_ID }}
+          vercel link --yes --token=${{ env.VERCEL_TOKEN }} --project=${{ matrix.project_name }}
 
       - name: Build with Vercel
         run: |
