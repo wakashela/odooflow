@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useAuthStore } from "@/store/authStore";
 import { useSettingsStore } from "@/store/settingsStore";
 import {
   fetchAllSettings,
@@ -37,7 +38,8 @@ const TABS: { key: Tab; label: string; icon: typeof Building2 }[] = [
 ];
 
 export default function SettingsPage() {
-  const { company, banks, pdfColors, printSettings, loading, setCompany, setBanks, setPdfColors, setPrintSettings, setLoading } =
+  const { session } = useAuthStore();
+  const { company, pdfColors, printSettings, loading, setCompany, setBanks, setPdfColors, setPrintSettings, setLoading } =
     useSettingsStore();
   const [activeTab, setActiveTab] = useState<Tab>("company");
   const [saving, setSaving] = useState(false);
@@ -71,8 +73,9 @@ export default function SettingsPage() {
   }, [setCompany, setBanks, setPdfColors, setPrintSettings, setLoading]);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadSettings();
+  }, [session, loadSettings]);
 
   const showSaved = () => {
     setSaved(true);
@@ -608,7 +611,7 @@ function PrintSettingsTab({
           <div>
             <label className="text-sm font-medium text-[var(--color-ink)]">Print Original & Duplicate</label>
             <p className="text-xs text-[var(--color-muted-soft)] mt-0.5">
-              When enabled, PDF documents will be printed with "ORIGINAL" and "DUPLICATE" banners
+              When enabled, PDF documents will be printed with &quot;ORIGINAL&quot; and &quot;DUPLICATE&quot; banners
             </p>
           </div>
           <button

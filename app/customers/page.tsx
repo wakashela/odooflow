@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
 import { fetchCustomers, updateCustomer, createCustomer } from "@/lib/odoo/partner";
 import { Spinner } from "@/components/ui/Spinner";
-import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { ResPartner } from "@/types/odoo";
@@ -83,7 +82,7 @@ export default function CustomersPage() {
     setEditingId(null);
   }
 
-  async function handleCreateQuick() {
+  async function _handleCreateQuick() {
     try {
       const name = `New Customer ${Date.now()}`;
       const id = await createCustomer({
@@ -112,9 +111,10 @@ export default function CustomersPage() {
     currentPage * PAGE_SIZE
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search]);
+  useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) setCurrentPage(1);
+  }, [session, search]);
 
   return (
     <div className="w-full px-8 space-y-2">

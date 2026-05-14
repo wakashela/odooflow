@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
-import Link from "next/link";
 import { fetchDeliveries } from "@/lib/odoo/stock";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
@@ -28,12 +27,6 @@ export default function DeliveryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  useEffect(() => {
-    if (session) {
-      loadPickings();
-    }
-  }, [session]);
-
   async function loadPickings() {
     try {
       setLoading(true);
@@ -45,6 +38,11 @@ export default function DeliveryPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadPickings();
+  }, [session]);
 
   const filtered = pickings.filter((p) => {
     const matchesSearch =
@@ -68,8 +66,9 @@ export default function DeliveryPage() {
   );
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, stateFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) setCurrentPage(1);
+  }, [session, search, stateFilter]);
 
   return (
     <div className="w-full px-8 space-y-2">

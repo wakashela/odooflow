@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { login } from "@/lib/odoo/auth";
 import { getLogoSrc } from "@/lib/assets";
 import { useAuthStore } from "@/store/authStore";
@@ -36,7 +37,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)]">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <img src={getLogoSrc()} alt="Logo" className="mx-auto mb-4 h-14 w-14 object-contain" />
+          <Image src={getLogoSrc()} alt="Logo" className="mx-auto mb-4 h-14 w-14 object-contain" unoptimized />
           <h1 className="text-2xl font-bold font-[family-name:var(--font-heading)] text-[var(--color-text)]">
             OdooFlow
           </h1>

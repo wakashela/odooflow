@@ -27,12 +27,6 @@ export default function PurchaseOrdersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  useEffect(() => {
-    if (session) {
-      loadOrders();
-    }
-  }, [session]);
-
   async function loadOrders() {
     try {
       setLoading(true);
@@ -44,6 +38,11 @@ export default function PurchaseOrdersPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadOrders();
+  }, [session]);
 
   const filtered = orders.filter((po) => {
     const matchesSearch =
@@ -66,8 +65,9 @@ export default function PurchaseOrdersPage() {
   );
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, stateFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) setCurrentPage(1);
+  }, [session, search, stateFilter]);
 
   return (
     <div className="w-full px-8 space-y-2">

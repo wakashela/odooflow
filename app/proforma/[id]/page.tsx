@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
 import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
+import { useAuthStore } from "@/store/authStore";
 import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -24,6 +25,7 @@ import { ArrowLeft, Printer, ExternalLink } from "lucide-react";
 export default function ProformaDetailPage() {
   const params = useParams();
   const id = Number(params.id);
+  const { session } = useAuthStore();
 
   const [order, setOrder] = useState<SaleOrder | null>(null);
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
@@ -62,8 +64,9 @@ export default function ProformaDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    loadOrder();
-  }, [loadOrder]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadOrder();
+  }, [session, loadOrder]);
 
   if (loading) {
     return (

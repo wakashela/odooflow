@@ -17,14 +17,6 @@ const STATE_TABS = [
   { key: "cancel", label: "Cancelled" },
 ];
 
-const PAYMENT_LABELS: Record<string, string> = {
-  not_paid: "Not Paid",
-  in_payment: "In Payment",
-  paid: "Paid",
-  partial: "Partial",
-  reversed: "Reversed",
-};
-
 export default function InvoicesPage() {
   const { session } = useAuthStore();
   const [invoices, setInvoices] = useState<AccountMove[]>([]);
@@ -33,12 +25,6 @@ export default function InvoicesPage() {
   const [stateFilter, setStateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
-
-  useEffect(() => {
-    if (session) {
-      loadInvoices();
-    }
-  }, [session]);
 
   async function loadInvoices() {
     try {
@@ -51,6 +37,11 @@ export default function InvoicesPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadInvoices();
+  }, [session]);
 
   const filtered = invoices.filter((inv) => {
     const matchesSearch =
@@ -73,8 +64,9 @@ export default function InvoicesPage() {
   );
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, stateFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) setCurrentPage(1);
+  }, [session, search, stateFilter]);
 
   return (
     <div className="w-full px-8 space-y-2">

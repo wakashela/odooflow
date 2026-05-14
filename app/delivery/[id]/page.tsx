@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchDeliveryById, fetchStockMoves, validateDelivery } from "@/lib/odoo/stock";
 import { odooCall } from "@/lib/odoo/client";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
+import { formatDateTime } from "@/lib/utils";
 import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -19,6 +20,7 @@ import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 export default function DeliveryDetailPage() {
   const params = useParams();
   const id = Number(params.id);
+  const { session } = useAuthStore();
 
   const [picking, setPicking] = useState<StockPicking | null>(null);
   const [moves, setMoves] = useState<StockMove[]>([]);
@@ -68,8 +70,9 @@ export default function DeliveryDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    loadPicking();
-  }, [loadPicking]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadPicking();
+  }, [session, loadPicking]);
 
   async function handleValidate() {
     if (!confirm("Validate this delivery? This will mark it as done.")) return;

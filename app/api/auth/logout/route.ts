@@ -1,7 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
-
-const ODOO_URL = process.env.ODOO_URL!;
-const ODOO_DB = process.env.ODOO_DB!;
+import { NextResponse } from "next/server";
 
 export async function POST() {
   const response = NextResponse.json({ success: true });

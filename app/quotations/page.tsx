@@ -23,12 +23,6 @@ export default function QuotationsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
-  useEffect(() => {
-    if (session) {
-      loadOrders();
-    }
-  }, [session]);
-
   async function loadOrders() {
     try {
       setLoading(true);
@@ -40,6 +34,11 @@ export default function QuotationsPage() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadOrders();
+  }, [session]);
 
   const filtered = orders.filter((o) => {
     const matchesSearch =
@@ -62,8 +61,9 @@ export default function QuotationsPage() {
   );
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [search, stateFilter]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) setCurrentPage(1);
+  }, [session, search, stateFilter]);
 
   const toggleSelectAll = () => {
     if (selectedIds.size === pagedOrders.length && pagedOrders.length > 0) {

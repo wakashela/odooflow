@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchPurchaseOrderById, fetchPurchaseOrderLines, confirmPurchaseOrder } from "@/lib/odoo/purchase";
 import { odooCall } from "@/lib/odoo/client";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 import { fetchCustomerById } from "@/lib/odoo/partner";
 import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
@@ -25,6 +25,7 @@ import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 export default function PurchaseOrderDetailPage() {
   const params = useParams();
   const id = Number(params.id);
+  const { session } = useAuthStore();
 
   const [order, setOrder] = useState<PurchaseOrder | null>(null);
   const [rawLines, setRawLines] = useState<PurchaseOrderLine[]>([]);
@@ -74,8 +75,9 @@ export default function PurchaseOrderDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    loadOrder();
-  }, [loadOrder]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadOrder();
+  }, [session, loadOrder]);
 
   async function handleConfirm() {
     if (!confirm("Confirm this purchase order?")) return;

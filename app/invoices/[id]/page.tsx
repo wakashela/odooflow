@@ -5,7 +5,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { fetchInvoiceById, fetchInvoiceLines, postInvoice } from "@/lib/odoo/invoice";
 import { odooCall } from "@/lib/odoo/client";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
+import { formatCurrency } from "@/lib/utils";
 import { fetchCustomerById } from "@/lib/odoo/partner";
 import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
@@ -25,6 +26,7 @@ import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 export default function InvoiceDetailPage() {
   const params = useParams();
   const id = Number(params.id);
+  const { session } = useAuthStore();
 
   const [invoice, setInvoice] = useState<AccountMove | null>(null);
   const [rawLines, setRawLines] = useState<AccountMoveLine[]>([]);
@@ -74,8 +76,9 @@ export default function InvoiceDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    loadInvoice();
-  }, [loadInvoice]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadInvoice();
+  }, [session, loadInvoice]);
 
   async function handlePost() {
     if (!confirm("Post this invoice? This will lock it.")) return;

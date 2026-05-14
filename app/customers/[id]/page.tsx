@@ -10,7 +10,7 @@ import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-function InfoRow({ icon: Icon, label, value, editable, onChange }: { icon: any; label: string; value: string | boolean | number; editable?: boolean; onChange?: (v: string | boolean) => void }) {
+function InfoRow({ icon: Icon, label, value, editable, onChange }: { icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>; label: string; value: string | boolean | number; editable?: boolean; onChange?: (v: string | boolean | number) => void }) {
   const isBoolean = typeof value === "boolean";
   return (
     <div className="flex items-start gap-4 py-4 border-b border-[var(--color-hairline)] last:border-b-0">
@@ -190,7 +190,7 @@ export default function CustomerDetailPage() {
 
       {editing && (
         <div className="mt-12 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-surface-soft)] p-4 text-center">
-          <p className="text-[14px] font-medium text-[var(--color-ink)]">You are currently editing this profile. Don't forget to save your changes.</p>
+          <p className="text-[14px] font-medium text-[var(--color-ink)]">You are currently editing this profile. Don&apos;t forget to save your changes.</p>
         </div>
       )}
     </div>

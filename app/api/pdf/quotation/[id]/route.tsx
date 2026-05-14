@@ -4,7 +4,6 @@ import { QuotationPDFPage } from "@/components/pdf/QuotationPDF";
 import { fetchPdfSettings } from "@/lib/odoo/server-settings";
 
 const ODOO_URL = process.env.ODOO_URL!;
-const ODOO_DB = process.env.ODOO_DB!;
 
 async function odooServerCall<T>(
   sessionId: string,

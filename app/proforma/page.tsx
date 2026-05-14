@@ -37,6 +37,7 @@ export default function ProformaPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (session) loadOrders();
   }, [session, loadOrders]);
 

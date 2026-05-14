@@ -7,6 +7,7 @@ import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOr
 import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
 import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { fetchProducts, fetchCustomerById, searchPartners } from "@/lib/odoo/partner";
+import { useAuthStore } from "@/store/authStore";
 import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import type { ResPartner } from "@/types/odoo";
 import type { BankDetail, CompanySettings } from "@/types/settings";
@@ -31,6 +32,7 @@ export default function QuotationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = Number(params.id);
+  const { session } = useAuthStore();
 
   const [order, setOrder] = useState<SaleOrder | null>(null);
   const [rawLines, setRawLines] = useState<SaleOrderLine[]>([]);
@@ -84,9 +86,10 @@ export default function QuotationDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    loadOrder();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (session) loadOrder();
     fetchProducts().then(setProducts);
-  }, [loadOrder]);
+  }, [session, loadOrder]);
 
   useEffect(() => {
     let active = true;

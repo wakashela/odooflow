@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --ignore-pattern 'scripts/'",
     "seed": "tsx scripts/seed-data.ts"
   },
+  "eslintIgnore": [
+    "scripts/",
+    "scratch.js"
+  ],
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
     "clsx": "^2.1.1",
