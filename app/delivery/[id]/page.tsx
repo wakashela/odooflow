@@ -50,7 +50,7 @@ export default function DeliveryDetailPage() {
       ]);
       setPicking(p);
       setMoves(m);
-      setDoneQtyEdits({});
+      setDoneQtyEdits(Object.fromEntries(m.map((mv) => [mv.id, mv.product_uom_qty])));
 
       if (p.partner_id?.[0]) {
         try {
