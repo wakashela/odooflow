@@ -16,7 +16,6 @@ on:
           - jensen
 
 env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
 jobs:
@@ -27,8 +26,12 @@ jobs:
         include:
           - client: ipatechs
             project_name: ipatechs-odooflow
+            vercel_project_id: ${{ secrets.IPATECHS_VERCEL_PROJECT_ID }}
+            vercel_org_id: ${{ secrets.IPATECHS_VERCEL_ORG_ID }}
           - client: jensen
             project_name: jensen-odooflow
+            vercel_project_id: ${{ secrets.JENSEN_VERCEL_PROJECT_ID }}
+            vercel_org_id: ${{ secrets.JENSEN_VERCEL_ORG_ID }}
 
     steps:
       - name: Checkout
@@ -43,9 +46,6 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
-
       - name: Lint Code
         run: npm run lint
 
@@ -58,14 +58,13 @@ jobs:
           NEXT_PUBLIC_ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
           NEXT_PUBLIC_ODOO_DB: ${{ secrets[format('{0}_ODOO_DB', matrix.client)] }}
 
-      - name: Pull Vercel Project Info
-        run: |
-          vercel link --yes --token=${{ env.VERCEL_TOKEN }} --cwd=. --yes
-        continue-on-error: true
-
-      - name: Build with Vercel
-        run: |
-          vercel build --prod --token=${{ env.VERCEL_TOKEN }} -- -d ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }} -e ODOO_DB=${{ secrets[format('{0}_ODOO_DB', matrix.client)] }} -e ODOO_USER=${{ secrets[format('{0}_ODOO_USER', matrix.client)] }} -e ODOO_PASSWORD=${{ secrets[format('{0}_ODOO_PASSWORD', matrix.client)] }} -e ODOO_COMPANY_NAME=${{ secrets[format('{0}_ODOO_COMPANY_NAME', matrix.client)] }} -e ODOO_COMPANY_TIN=${{ secrets[format('{0}_ODOO_COMPANY_TIN', matrix.client)] }} -e ODOO_COMPANY_VRN=${{ secrets[format('{0}_ODOO_COMPANY_VRN', matrix.client)] }} -e ODOO_COMPANY_ADDRESS=${{ secrets[format('{0}_ODOO_COMPANY_ADDRESS', matrix.client)] }} -e ODOO_COMPANY_PHONE=${{ secrets[format('{0}_ODOO_COMPANY_PHONE', matrix.client)] }} -e ODOO_COMPANY_EMAIL=${{ secrets[format('{0}_ODOO_COMPANY_EMAIL', matrix.client)] }} -e ODOO_COMPANY_WEBSITE=${{ secrets[format('{0}_ODOO_COMPANY_WEBSITE', matrix.client)] }} -e ODOO_COMPANY_CITY=${{ secrets[format('{0}_ODOO_COMPANY_CITY', matrix.client)] }} -e ODOO_COMPANY_COUNTRY=${{ secrets[format('{0}_ODOO_COMPANY_COUNTRY', matrix.client)] }} -e ODOOFLOW_PDF_PRIMARY=${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY', matrix.client)] }} -e ODOOFLOW_PDF_PRIMARY_DARK=${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY_DARK', matrix.client)] }} -e ODOOFLOW_PDF_ACCENT=${{ secrets[format('{0}_ODOOFLOW_PDF_ACCENT', matrix.client)] }}
+      - name: Deploy to Vercel
+        uses: amannn/action-vercel@v3
+        with:
+          vercel-token: ${{ env.VERCEL_TOKEN }}
+          vercel-org-id: ${{ matrix.vercel_org_id }}
+          vercel-project-id: ${{ matrix.vercel_project_id }}
+          vercel-args: '--prod'
         env:
           ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
           ODOO_DB: ${{ secrets[format('{0}_ODOO_DB', matrix.client)] }}
@@ -83,13 +82,6 @@ jobs:
           ODOOFLOW_PDF_PRIMARY: ${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY', matrix.client)] }}
           ODOOFLOW_PDF_PRIMARY_DARK: ${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY_DARK', matrix.client)] }}
           ODOOFLOW_PDF_ACCENT: ${{ secrets[format('{0}_ODOOFLOW_PDF_ACCENT', matrix.client)] }}
-          VERCEL_PROJECT_ID: ${{ secrets[format('{0}_VERCEL_PROJECT_ID', matrix.client)] }}
-
-      - name: Deploy to Vercel
-        run: |
-          vercel deploy --prebuilt --prod --token=${{ env.VERCEL_TOKEN }}
-        env:
-          VERCEL_PROJECT_ID: ${{ secrets[format('{0}_VERCEL_PROJECT_ID', matrix.client)] }}
 
       - name: Deployment Status
         if: always()
