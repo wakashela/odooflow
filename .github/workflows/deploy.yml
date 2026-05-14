@@ -38,7 +38,7 @@ jobs:
 
       - name: Deploy ipatechs
         if: github.event_name == 'push' || github.event.inputs.client == 'all' || github.event.inputs.client == 'ipatechs'
-        uses: amio/vercel-github-action@master
+        uses: vercel/action@main
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-project: ipatechs-odooflow
@@ -63,7 +63,7 @@ jobs:
 
       - name: Deploy jensen
         if: github.event_name == 'push' || github.event.inputs.client == 'all' || github.event.inputs.client == 'jensen'
-        uses: amio/vercel-github-action@master
+        uses: vercel/action@main
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-project: jensen-odooflow
