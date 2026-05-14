@@ -60,7 +60,7 @@ jobs:
 
       - name: Pull Vercel Project Info
         run: |
-          vercel link --yes --token=${{ env.VERCEL_TOKEN }}
+          vercel pull --yes --environment=production --token=${{ env.VERCEL_TOKEN }} --project-name=${{ matrix.project_name }}
         continue-on-error: true
 
       - name: Build with Vercel

@@ -3,12 +3,14 @@
 ## Commands
 
 ```bash
-npm run dev       # Start dev server
-npm run build     # Production build (also runs tsc)
+npm run dev       # Start dev server (http://localhost:3000)
+npm run build     # Production build (runs tsc + next build)
 npm run lint      # ESLint (eslint-config-next + typescript rules)
+npm run seed      # Generate test data (requires ODOO_* in .env.local)
+npx tsc --noEmit  # TypeScript check (no npm script, run directly)
 ```
 
-No test runner configured. No `npm test`.
+No test runner. CI runs `npm run lint` + `npx tsc --noEmit` on push to `main`/`develop` and PRs.
 
 ## Verification
 
@@ -84,6 +86,12 @@ Tailwind CSS v4 with `@tailwindcss/postcss`. Theme colors defined as CSS variabl
 Zustand stores in `store/`:
 - `authStore.ts` — session info, loading state
 - `documentStore.ts` — current document being edited
+
+## Multi-client
+
+Client-specific env files: `.env.ipatechs`, `.env.jensenintl`. When developing locally, copy the relevant file to `.env.local` before running the app.
+
+Deployments: `ipatechs-odooflow.vercel.app`, `jensen-odooflow.vercel.app` (configured in `.github/workflows/deploy.yml`).
 
 ## Reference
 
