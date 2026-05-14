@@ -23,7 +23,7 @@ const vars = [
   "NEXT_PUBLIC_ODOOFLOW_CLIENT",
 ];
 
-async function setEnvVar(key: string, value: string): Promise<void> {
+async function setEnvVar(key, value) {
   const body = JSON.stringify({
     key,
     value,
@@ -47,19 +47,21 @@ async function setEnvVar(key: string, value: string): Promise<void> {
         res.on("data", (chunk) => (data += chunk));
         res.on("end", () => {
           if (res.statusCode === 200 || res.statusCode === 201) {
-            console.log(`Set ${key}: OK (${res.statusCode})`);
+            console.log(`Set ${key}: OK`);
           } else if (res.statusCode === 409) {
-            console.log(`Set ${key}: already exists (${res.statusCode})`);
+            console.log(`Set ${key}: already exists, skipping`);
           } else {
-            console.log(`Set ${key}: ${res.statusCode} ${data}`);
+            console.error(`Set ${key}: FAILED (${res.statusCode}) ${data}`);
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
           }
           resolve();
         });
-      },
+      }
     );
 
     req.on("error", (e) => {
-      console.error(`Failed to set ${key}:`, e.message);
+      console.error(`Failed to set ${key}: ${e.message}`);
       reject(e);
     });
 
@@ -71,8 +73,8 @@ async function setEnvVar(key: string, value: string): Promise<void> {
 let failed = false;
 for (const name of vars) {
   const value = process.env[name];
-  if (value === undefined) {
-    console.error(`Warning: ${name} not set in environment, skipping`);
+  if (value === undefined || value === "") {
+    console.error(`Skipping ${name}: not set`);
     continue;
   }
   try {
@@ -86,4 +88,4 @@ if (failed) {
   process.exit(1);
 }
 
-console.log("All environment variables set.");
+console.log("All environment variables set successfully.");
