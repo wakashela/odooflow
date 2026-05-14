@@ -15,10 +15,6 @@ on:
           - ipatechs
           - jensen
 
-env:
-  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -55,9 +51,8 @@ jobs:
       - name: Get Vercel Project ID
         id: get-project
         run: |
-          echo "Getting project ID for ${{ matrix.project_name }}..."
           PROJECT_DATA=$(curl -s "https://api.vercel.com/v9/projects/${{ matrix.project_name }}" \
-            -H "Authorization: Bearer ${{ env.VERCEL_TOKEN }}")
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
           PROJECT_ID=$(echo "$PROJECT_DATA" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
           if [ -z "$PROJECT_ID" ]; then
             echo "Error: Could not find project ID for ${{ matrix.project_name }}"
@@ -66,16 +61,19 @@ jobs:
           fi
           echo "Found project ID: $PROJECT_ID"
           echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
-          echo "$PROJECT_DATA" > /tmp/project-data.json
 
       - name: Link Vercel Project
         run: |
           mkdir -p .vercel
-          echo '{"orgId":"${{ env.VERCEL_ORG_ID }}","projectId":"${{ steps.get-project.outputs.project_id }}"}' > .vercel/project.json
+          echo "{\"orgId\":\"${{ secrets.VERCEL_ORG_ID }}\",\"projectId\":\"${{ steps.get-project.outputs.project_id }}\"}" > .vercel/project.json
           cat .vercel/project.json
 
+      - name: Pull Vercel Settings
+        run: vercel pull --yes --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Build with Vercel
-        run: vercel build --prod --token=${{ env.VERCEL_TOKEN }}
+        run: |
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
           ODOO_DB: ${{ secrets[format('{0}_ODOO_DB', matrix.client)] }}
@@ -95,7 +93,7 @@ jobs:
           ODOOFLOW_PDF_ACCENT: ${{ secrets[format('{0}_ODOOFLOW_PDF_ACCENT', matrix.client)] }}
 
       - name: Deploy to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ env.VERCEL_TOKEN }}
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deployment Status
         if: always()
