@@ -53,7 +53,7 @@ jobs:
         run: |
           PROJECT_DATA=$(curl -s "https://api.vercel.com/v9/projects/${{ matrix.project_name }}" \
             -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}")
-          PROJECT_ID=$(echo "$PROJECT_DATA" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+          PROJECT_ID=$(echo "$PROJECT_DATA" | node -e "process.stdin.setEncoding('utf8');let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const o=JSON.parse(d);console.log(o.id||'')})")
           if [ -z "$PROJECT_ID" ]; then
             echo "Error: Could not find project ID"
             echo "Response: $PROJECT_DATA"
