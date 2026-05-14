@@ -17,6 +17,7 @@ on:
 
 env:
   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
 
 jobs:
   deploy:
@@ -26,12 +27,8 @@ jobs:
         include:
           - client: ipatechs
             project_name: ipatechs-odooflow
-            vercel_project_id: ${{ secrets.IPATECHS_VERCEL_PROJECT_ID }}
-            vercel_org_id: ${{ secrets.IPATECHS_VERCEL_ORG_ID }}
           - client: jensen
             project_name: jensen-odooflow
-            vercel_project_id: ${{ secrets.JENSEN_VERCEL_PROJECT_ID }}
-            vercel_org_id: ${{ secrets.JENSEN_VERCEL_ORG_ID }}
 
     steps:
       - name: Checkout
@@ -62,8 +59,7 @@ jobs:
         uses: amannn/action-vercel@v3
         with:
           vercel-token: ${{ env.VERCEL_TOKEN }}
-          vercel-org-id: ${{ matrix.vercel_org_id }}
-          vercel-project-id: ${{ matrix.vercel_project_id }}
+          vercel-project-id: ${{ secrets[format('{0}_VERCEL_PROJECT_ID', matrix.client)] }}
           vercel-args: '--prod'
         env:
           ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
