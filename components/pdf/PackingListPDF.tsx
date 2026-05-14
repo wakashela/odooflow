@@ -102,14 +102,13 @@ export function PackingListPDFPage({
 
         <View style={pdfStyles.infoSection}>
           <View style={pdfStyles.infoCol}>
-            <Text style={pdfStyles.infoLabel}>Ship To</Text>
+            <Text style={pdfStyles.infoLabel}>Deliver To</Text>
             <Text style={pdfStyles.infoValue}>{partnerName}</Text>
             {partnerAddress && (
-              <Text style={pdfStyles.infoSubValue}>{partnerAddress}</Text>
+              <Text style={pdfStyles.infoAddress}>{partnerAddress}</Text>
             )}
           </View>
-          <View style={pdfStyles.infoCol}>
-            <Text style={pdfStyles.infoLabel}>Document Details</Text>
+          <View style={pdfStyles.infoColRight}>
             <Text style={pdfStyles.infoValue}>{documentName}</Text>
             <Text style={pdfStyles.infoSubValue}>
               Scheduled: {scheduledDate}

@@ -39,3 +39,17 @@ export async function fetchStockMoves(pickingId: number): Promise<StockMove[]> {
 export async function validateDelivery(id: number): Promise<boolean> {
   return odooCall<boolean>("stock.picking", "button_validate", [[id]]);
 }
+
+export async function setMoveDoneQuantity(moveId: number, quantity: number): Promise<boolean> {
+  return odooCall<boolean>("stock.move", "write", [[moveId], { quantity }], {});
+}
+
+export async function findInvoiceByOrigin(origin: string): Promise<{ id: number; name: string } | null> {
+  const results = await odooCall<{ id: number; name: string }[]>(
+    "account.move",
+    "search_read",
+    [[["invoice_origin", "=", origin], ["move_type", "=", "out_invoice"]]],
+    { fields: ["id", "name"], limit: 1 }
+  );
+  return results.length > 0 ? results[0] : null;
+}

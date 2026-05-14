@@ -66,7 +66,6 @@ export async function GET(
             "date_done",
             "origin",
             "picking_type_id",
-            "weight",
           ],
           limit: 1,
         }
@@ -156,7 +155,6 @@ export async function GET(
       origin: picking.origin as string | undefined,
       moves: deliveryMoves,
       packages: deliveryMoves.length,
-      weight: picking.weight ? String(picking.weight) : undefined,
       company: pdfSettings.company,
       pdfColors: pdfSettings.colors,
       banks: banks as unknown as import("@/types/settings").BankDetail[],

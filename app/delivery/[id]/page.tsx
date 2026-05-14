@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchDeliveryById, fetchStockMoves, validateDelivery } from "@/lib/odoo/stock";
+import { fetchDeliveryById, fetchStockMoves, validateDelivery, setMoveDoneQuantity, findInvoiceByOrigin } from "@/lib/odoo/stock";
 import { odooCall } from "@/lib/odoo/client";
 import { useAuthStore } from "@/store/authStore";
 import { formatDateTime } from "@/lib/utils";
@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { StockPicking, StockMove, SaleOrder, ResPartner } from "@/types/odoo";
 import type { DocumentType } from "@/types/documents";
-import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
+import { ArrowLeft, CheckCircle, Printer, ExternalLink, Save } from "lucide-react";
 
 export default function DeliveryDetailPage() {
   const params = useParams();
@@ -26,12 +26,20 @@ export default function DeliveryDetailPage() {
   const [moves, setMoves] = useState<StockMove[]>([]);
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
+  const [savingQuantities, setSavingQuantities] = useState(false);
   const [originSoId, setOriginSoId] = useState<number | null>(null);
   const [customer, setCustomer] = useState<ResPartner | null>(null);
+  const [invoice, setInvoice] = useState<{ id: number; name: string } | null>(null);
+  const [doneQtyEdits, setDoneQtyEdits] = useState<Record<number, number>>({});
+
+  const canEdit =
+    picking?.state === "assigned" ||
+    picking?.state === "confirmed";
 
   const canValidate =
     picking?.state === "assigned" ||
-    picking?.state === "confirmed";
+    picking?.state === "confirmed" ||
+    picking?.state === "draft";
 
   const loadPicking = useCallback(async () => {
     try {
@@ -42,8 +50,8 @@ export default function DeliveryDetailPage() {
       ]);
       setPicking(p);
       setMoves(m);
+      setDoneQtyEdits({});
 
-      // Fetch customer details
       if (p.partner_id?.[0]) {
         try {
           const customerData = await fetchCustomerById(p.partner_id[0]);
@@ -62,6 +70,14 @@ export default function DeliveryDetailPage() {
           if (sos.length) setOriginSoId(sos[0].id);
         } catch {}
       }
+
+      // Check for invoice
+      if (p.state === "done" && p.origin) {
+        try {
+          const inv = await findInvoiceByOrigin(p.origin);
+          if (inv) setInvoice(inv);
+        } catch {}
+      }
     } catch (err) {
       console.error("Failed to load delivery:", err);
     } finally {
@@ -74,10 +90,43 @@ export default function DeliveryDetailPage() {
     if (session) loadPicking();
   }, [session, loadPicking]);
 
+  function handleQtyChange(moveId: number, value: string) {
+    const num = parseFloat(value);
+    setDoneQtyEdits((prev) => ({
+      ...prev,
+      [moveId]: isNaN(num) ? 0 : num,
+    }));
+  }
+
+  async function handleSaveQuantities() {
+    setSavingQuantities(true);
+    try {
+      for (const move of moves) {
+        const newQty = doneQtyEdits[move.id];
+        if (newQty !== undefined && newQty !== move.quantity_done) {
+          await setMoveDoneQuantity(move.id, newQty);
+        }
+      }
+      await loadPicking();
+    } catch (err) {
+      alert(`Failed to save quantities: ${(err as Error).message}`);
+    } finally {
+      setSavingQuantities(false);
+    }
+  }
+
   async function handleValidate() {
     if (!confirm("Validate this delivery? This will mark it as done.")) return;
     setValidating(true);
     try {
+      // Save any unsaved quantities first
+      for (const move of moves) {
+        const newQty = doneQtyEdits[move.id];
+        if (newQty !== undefined && newQty !== move.quantity_done) {
+          await setMoveDoneQuantity(move.id, newQty);
+        }
+      }
+
       await validateDelivery(id);
       await loadPicking();
     } catch (err) {
@@ -126,10 +175,24 @@ export default function DeliveryDetailPage() {
                   from {picking.origin}
                 </span>
               )}
+              {invoice && (
+                <Link href={`/invoices/${invoice.id}`}>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[var(--color-primary)] text-white px-2.5 py-0.5 text-xs font-medium">
+                    <ExternalLink size={12} />
+                    {invoice.name}
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {canEdit && (
+            <Button onClick={handleSaveQuantities} disabled={savingQuantities} variant="outline">
+              <Save size={16} />
+              {savingQuantities ? "Saving..." : "Save Quantities"}
+            </Button>
+          )}
           {canValidate && (
             <Button onClick={handleValidate} disabled={validating}>
               <CheckCircle size={16} />
@@ -153,7 +216,7 @@ export default function DeliveryDetailPage() {
 
       <WorkflowBar currentType="delivery" completed={completedSteps} />
 
-      {(picking.origin || originSoId) && (
+      {(picking.origin || originSoId || invoice) && (
         <Card>
           <h3 className="mb-3 text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
             Related Documents
@@ -172,6 +235,14 @@ export default function DeliveryDetailPage() {
                 <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
                   <ExternalLink size={14} />
                   Proforma PRO-{picking.origin}
+                </span>
+              </Link>
+            )}
+            {invoice && (
+              <Link href={`/invoices/${invoice.id}`}>
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--color-border)] px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors">
+                  <ExternalLink size={14} />
+                  Invoice {invoice.name}
                 </span>
               </Link>
             )}
@@ -260,29 +331,47 @@ export default function DeliveryDetailPage() {
             </tr>
           </thead>
           <tbody>
-            {moves.map((move, idx) => (
-              <tr
-                key={move.id}
-                className={`border-b border-[var(--color-border-light)] ${idx % 2 === 1 ? "bg-[var(--color-row-alt)]" : ""}`}
-              >
-                <td className="px-4 py-3 text-[var(--color-text-muted)]">{idx + 1}</td>
-                <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs font-medium">
-                  {(() => {
-                    const label = move.product_id?.[1] || "";
-                    const match = label.match(/^\[(.*?)\]/);
-                    return match ? match[1] : "-";
-                  })()}
-                </td>
-                <td className="px-4 py-3 text-[var(--color-text)]">
-                  {move.product_id?.[1] || move.name}
-                </td>
-                <td className="px-4 py-3 text-right font-medium">{move.product_uom_qty}</td>
-                <td className="px-4 py-3 text-right font-medium">{move.quantity_done}</td>
-                <td className="px-4 py-3 text-right text-[var(--color-text-muted)]">
-                  {move.product_uom?.[1] || "-"}
-                </td>
-              </tr>
-            ))}
+            {moves.map((move, idx) => {
+              const currentDone = doneQtyEdits[move.id] !== undefined
+                ? doneQtyEdits[move.id]
+                : move.quantity_done;
+              return (
+                <tr
+                  key={move.id}
+                  className={`border-b border-[var(--color-border-light)] ${idx % 2 === 1 ? "bg-[var(--color-row-alt)]" : ""}`}
+                >
+                  <td className="px-4 py-3 text-[var(--color-text-muted)]">{idx + 1}</td>
+                  <td className="px-4 py-3 text-[var(--color-text-muted)] text-xs font-medium">
+                    {(() => {
+                      const label = move.product_id?.[1] || "";
+                      const match = label.match(/^\[(.*?)\]/);
+                      return match ? match[1] : "-";
+                    })()}
+                  </td>
+                  <td className="px-4 py-3 text-[var(--color-text)]">
+                    {move.product_id?.[1] || move.name}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium">{move.product_uom_qty}</td>
+                  <td className="px-4 py-3 text-right font-medium">
+                    {canEdit ? (
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={currentDone}
+                        onChange={(e) => handleQtyChange(move.id, e.target.value)}
+                        className="w-20 text-right rounded border border-[var(--color-border)] px-2 py-1 text-sm focus:border-[var(--color-primary)] focus:outline-none"
+                      />
+                    ) : (
+                      move.quantity_done
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-right text-[var(--color-text-muted)]">
+                    {move.product_uom?.[1] || "-"}
+                  </td>
+                </tr>
+              );
+            })}
             {moves.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
