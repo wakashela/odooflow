@@ -18,17 +18,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - client: ipatechs
-            project_name: ipatechs-odooflow
-          - client: jensen
-            project_name: jensen-odooflow
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -45,39 +36,52 @@ jobs:
       - name: Type Check
         run: npx tsc --noEmit
 
-      - name: Build Project
-        run: npm run build
+      - name: Deploy ipatechs
+        if: github.event_name == 'push' || github.event.inputs.client == 'all' || github.event.inputs.client == 'ipatechs'
+        uses: amio/vercel-github-action@master
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project: ipatechs-odooflow
+          vercel-args: '--prod'
         env:
-          NEXT_PUBLIC_ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
-          NEXT_PUBLIC_ODOO_DB: ${{ secrets[format('{0}_ODOO_DB', matrix.client)] }}
+          ODOO_URL: ${{ secrets.IPATECHS_ODOO_URL }}
+          ODOO_DB: ${{ secrets.IPATECHS_ODOO_DB }}
+          ODOO_USER: ${{ secrets.IPATECHS_ODOO_USER }}
+          ODOO_PASSWORD: ${{ secrets.IPATECHS_ODOO_PASSWORD }}
+          ODOO_COMPANY_NAME: ${{ secrets.IPATECHS_ODOO_COMPANY_NAME }}
+          ODOO_COMPANY_TIN: ${{ secrets.IPATECHS_ODOO_COMPANY_TIN }}
+          ODOO_COMPANY_VRN: ${{ secrets.IPATECHS_ODOO_COMPANY_VRN }}
+          ODOO_COMPANY_ADDRESS: ${{ secrets.IPATECHS_ODOO_COMPANY_ADDRESS }}
+          ODOO_COMPANY_PHONE: ${{ secrets.IPATECHS_ODOO_COMPANY_PHONE }}
+          ODOO_COMPANY_EMAIL: ${{ secrets.IPATECHS_ODOO_COMPANY_EMAIL }}
+          ODOO_COMPANY_WEBSITE: ${{ secrets.IPATECHS_ODOO_COMPANY_WEBSITE }}
+          ODOO_COMPANY_CITY: ${{ secrets.IPATECHS_ODOO_COMPANY_CITY }}
+          ODOO_COMPANY_COUNTRY: ${{ secrets.IPATECHS_ODOO_COMPANY_COUNTRY }}
+          ODOOFLOW_PDF_PRIMARY: ${{ secrets.IPATECHS_ODOOFLOW_PDF_PRIMARY }}
+          ODOOFLOW_PDF_PRIMARY_DARK: ${{ secrets.IPATECHS_ODOOFLOW_PDF_PRIMARY_DARK }}
+          ODOOFLOW_PDF_ACCENT: ${{ secrets.IPATECHS_ODOOFLOW_PDF_ACCENT }}
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel@latest
-
-      - name: Deploy to Vercel
-        run: |
-          vercel deploy --prebuilt --prod \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --project=${{ matrix.project_name }}
+      - name: Deploy jensen
+        if: github.event_name == 'push' || github.event.inputs.client == 'all' || github.event.inputs.client == 'jensen'
+        uses: amio/vercel-github-action@master
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project: jensen-odooflow
+          vercel-args: '--prod'
         env:
-          ODOO_URL: ${{ secrets[format('{0}_ODOO_URL', matrix.client)] }}
-          ODOO_DB: ${{ secrets[format('{0}_ODOO_DB', matrix.client)] }}
-          ODOO_USER: ${{ secrets[format('{0}_ODOO_USER', matrix.client)] }}
-          ODOO_PASSWORD: ${{ secrets[format('{0}_ODOO_PASSWORD', matrix.client)] }}
-          ODOO_COMPANY_NAME: ${{ secrets[format('{0}_ODOO_COMPANY_NAME', matrix.client)] }}
-          ODOO_COMPANY_TIN: ${{ secrets[format('{0}_ODOO_COMPANY_TIN', matrix.client)] }}
-          ODOO_COMPANY_VRN: ${{ secrets[format('{0}_ODOO_COMPANY_VRN', matrix.client)] }}
-          ODOO_COMPANY_ADDRESS: ${{ secrets[format('{0}_ODOO_COMPANY_ADDRESS', matrix.client)] }}
-          ODOO_COMPANY_PHONE: ${{ secrets[format('{0}_ODOO_COMPANY_PHONE', matrix.client)] }}
-          ODOO_COMPANY_EMAIL: ${{ secrets[format('{0}_ODOO_COMPANY_EMAIL', matrix.client)] }}
-          ODOO_COMPANY_WEBSITE: ${{ secrets[format('{0}_ODOO_COMPANY_WEBSITE', matrix.client)] }}
-          ODOO_COMPANY_CITY: ${{ secrets[format('{0}_ODOO_COMPANY_CITY', matrix.client)] }}
-          ODOO_COMPANY_COUNTRY: ${{ secrets[format('{0}_ODOO_COMPANY_COUNTRY', matrix.client)] }}
-          ODOOFLOW_PDF_PRIMARY: ${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY', matrix.client)] }}
-          ODOOFLOW_PDF_PRIMARY_DARK: ${{ secrets[format('{0}_ODOOFLOW_PDF_PRIMARY_DARK', matrix.client)] }}
-          ODOOFLOW_PDF_ACCENT: ${{ secrets[format('{0}_ODOOFLOW_PDF_ACCENT', matrix.client)] }}
-
-      - name: Deployment Status
-        if: always()
-        run: |
-          echo "Deployment for ${{ matrix.client }}: ${{ job.status }}"
+          ODOO_URL: ${{ secrets.JENSEN_ODOO_URL }}
+          ODOO_DB: ${{ secrets.JENSEN_ODOO_DB }}
+          ODOO_USER: ${{ secrets.JENSEN_ODOO_USER }}
+          ODOO_PASSWORD: ${{ secrets.JENSEN_ODOO_PASSWORD }}
+          ODOO_COMPANY_NAME: ${{ secrets.JENSEN_ODOO_COMPANY_NAME }}
+          ODOO_COMPANY_TIN: ${{ secrets.JENSEN_ODOO_COMPANY_TIN }}
+          ODOO_COMPANY_VRN: ${{ secrets.JENSEN_ODOO_COMPANY_VRN }}
+          ODOO_COMPANY_ADDRESS: ${{ secrets.JENSEN_ODOO_COMPANY_ADDRESS }}
+          ODOO_COMPANY_PHONE: ${{ secrets.JENSEN_ODOO_COMPANY_PHONE }}
+          ODOO_COMPANY_EMAIL: ${{ secrets.JENSEN_ODOO_COMPANY_EMAIL }}
+          ODOO_COMPANY_WEBSITE: ${{ secrets.JENSEN_ODOO_COMPANY_WEBSITE }}
+          ODOO_COMPANY_CITY: ${{ secrets.JENSEN_ODOO_COMPANY_CITY }}
+          ODOO_COMPANY_COUNTRY: ${{ secrets.JENSEN_ODOO_COMPANY_COUNTRY }}
+          ODOOFLOW_PDF_PRIMARY: ${{ secrets.JENSEN_ODOOFLOW_PDF_PRIMARY }}
+          ODOOFLOW_PDF_PRIMARY_DARK: ${{ secrets.JENSEN_ODOOFLOW_PDF_PRIMARY_DARK }}
+          ODOOFLOW_PDF_ACCENT: ${{ secrets.JENSEN_ODOOFLOW_PDF_ACCENT }}
