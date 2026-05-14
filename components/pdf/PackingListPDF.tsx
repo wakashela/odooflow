@@ -90,7 +90,7 @@ export function PackingListPDFPage({
               </View>
             </View>
           </View>
-          <View style={[pdfStyles.docTypeBadge, { backgroundColor: colors.accent }]}>
+          <View style={[pdfStyles.docTypeBadge, { backgroundColor: colors.primaryDark || colors.primary }]}>
             <Text style={pdfStyles.docTypeLabel}>PACKING LIST</Text>
           </View>
         </View>
@@ -120,7 +120,7 @@ export function PackingListPDFPage({
         </View>
 
         <View style={pdfStyles.table}>
-          <View style={[pdfStyles.tableHeader, { backgroundColor: colors.accent }]}>
+          <View style={[pdfStyles.tableHeader, { backgroundColor: colors.primaryDark || colors.primary }]}>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>
               #
             </Text>
