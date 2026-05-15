@@ -10,7 +10,6 @@ export function parseDeliveryTime(value: string | undefined): { number: number; 
 }
 
 export function formatDeliveryTime(number: number, unit: "days" | "weeks"): string {
-  if (!number) return "";
   const label = unit === "days" ? "DAYS" : "WEEKS";
   return `${number} ${label}`;
 }
