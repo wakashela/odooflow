@@ -308,6 +308,11 @@ def main():
     partner_fields = [
         ("x_tin", "TIN"),
     ]
+
+    line_fields = [
+        ("x_delivery_time", "Delivery Time"),
+    ]
+
     fields_ok = True
     for fname, flabel in bank_fields:
         try:
@@ -333,13 +338,29 @@ def main():
                 ok(f"Field '{fname}' already exists — skipping")
             else:
                 create_field(ODOO_URL, uid, ODOO_DB, ODOO_PASSWORD,
-                             "res.partner", fname, flabel)
+                              "res.partner", fname, flabel)
                 ok(f"Field '{fname}' created on res.partner")
         except Exception as e:
             warn(f"Could not create '{fname}': {e}")
             partner_ok = False
 
     results.append(("Custom partner fields", partner_ok, ""))
+
+    # Create x_delivery_time on sale.order.line and account.move.line
+    line_ok = True
+    for model in ["sale.order.line", "account.move.line"]:
+        for fname, flabel in line_fields:
+            try:
+                if field_exists(ODOO_URL, uid, ODOO_DB, ODOO_PASSWORD, model, fname):
+                    ok(f"Field '{fname}' already exists on {model} — skipping")
+                else:
+                    create_field(ODOO_URL, uid, ODOO_DB, ODOO_PASSWORD, model, fname, flabel)
+                    ok(f"Field '{fname}' created on {model}")
+            except Exception as e:
+                warn(f"Could not create '{fname}' on {model}: {e}")
+                line_ok = False
+
+    results.append(("Delivery Time field (sale + invoice lines)", line_ok, ""))
 
     # ------------------------------------------------------------------
     # Step 4 — Set company details
