@@ -11,7 +11,7 @@ const INVOICE_FIELDS = [
 
 const LINE_FIELDS = [
   "id", "move_id", "product_id", "name", "quantity",
-  "price_unit", "price_subtotal", "discount", "tax_ids", "x_delivery_time",
+  "price_unit", "price_subtotal", "discount", "tax_ids",
 ];
 
 export async function fetchInvoices(limit = 50, offset = 0): Promise<AccountMove[]> {

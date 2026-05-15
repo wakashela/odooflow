@@ -122,7 +122,6 @@ export default function InvoiceDetailPage() {
       unitPrice: l.price_unit,
       discount: l.discount,
       subtotal: l.price_subtotal,
-      deliveryTime: l.x_delivery_time || "",
     };
   });
 
