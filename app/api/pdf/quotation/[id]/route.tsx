@@ -165,6 +165,7 @@ export async function GET(
       company: pdfSettings.company,
       banks: pdfSettings.banks,
       pdfColors: pdfSettings.colors,
+      showDeliveryTimeInLine: pdfSettings.printSettings.showDeliveryTimeInLine,
     };
 
       const doc = copyParam ? (

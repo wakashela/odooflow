@@ -43,12 +43,14 @@ export async function createQuotation(data: {
   date_order?: string;
   validity_date?: string;
   note?: string;
+  client_order_ref?: string;
   order_line: {
     product_id: number;
     name: string;
     product_uom_qty: number;
     price_unit: number;
     discount?: number;
+    x_delivery_time?: string;
   }[];
 }): Promise<number> {
   const orderLineData = data.order_line.map((line) => [
@@ -58,6 +60,7 @@ export async function createQuotation(data: {
       product_uom_qty: line.product_uom_qty,
       price_unit: line.price_unit,
       discount: line.discount || 0,
+      x_delivery_time: line.x_delivery_time || "",
     },
   ]);
 
@@ -66,6 +69,7 @@ export async function createQuotation(data: {
     date_order: data.date_order,
     validity_date: data.validity_date,
     note: data.note,
+    client_order_ref: data.client_order_ref,
     order_line: orderLineData,
   }]);
 

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createQuotation } from "@/lib/odoo/sale";
 import { fetchCustomers, fetchProducts, searchPartners, createCustomer, createProduct } from "@/lib/odoo/partner";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
+import { formatDeliveryTime } from "@/lib/delivery-time";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
@@ -51,8 +52,10 @@ export default function NewQuotationPage() {
 
   const [partnerId, setPartnerId] = useState(0);
   const [validityDate, setValidityDate] = useState("");
+  const [clientOrderRef, setClientOrderRef] = useState("");
   const [notes, setNotes] = useState("");
   const [lines, setLines] = useState<LineItem[]>([]);
+  const [deliveryUnits, setDeliveryUnits] = useState<Record<number, "days" | "weeks">>({});
 
   useEffect(() => {
     Promise.all([fetchCustomers(), fetchProducts()]).then(([custs, prods]) => {
@@ -251,6 +254,7 @@ export default function NewQuotationPage() {
       const orderId = await createQuotation({
         partner_id: Array.isArray(partnerId) ? partnerId[0] : partnerId,
         validity_date: validityDate || undefined,
+        client_order_ref: clientOrderRef || undefined,
         note: notes || undefined,
         order_line: lines
           .filter((l) => l.productId && l.quantity > 0)
@@ -260,6 +264,7 @@ export default function NewQuotationPage() {
             product_uom_qty: l.quantity,
             price_unit: l.unitPrice,
             discount: l.discount,
+            x_delivery_time: l.deliveryTime || "",
           })),
       });
       router.push(`/quotations/${orderId}`);
@@ -351,6 +356,12 @@ export default function NewQuotationPage() {
             type="date"
             value={validityDate}
             onChange={(e) => setValidityDate(e.target.value)}
+          />
+          <Input
+            label="Customer Ref"
+            value={clientOrderRef}
+            onChange={(e) => setClientOrderRef(e.target.value)}
+            placeholder="e.g. PO-2026-001"
           />
         </div>
       </Card>
@@ -464,14 +475,37 @@ export default function NewQuotationPage() {
                   step={0.1}
                 />
                 {printSettings.showDeliveryTimeInLine && (
-                  <Input
-                    label={`Delivery (${printSettings.deliveryTimeUnit})`}
-                    type="number"
-                    value={line.deliveryTime || ""}
-                    onChange={(e) => updateLine(line.id, "deliveryTime", e.target.value)}
-                    min={0}
-                    placeholder="0"
-                  />
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[14px] font-medium text-[var(--color-muted)]">Delivery Time</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={line.deliveryTime ? parseFloat(line.deliveryTime) || "" : ""}
+                        onChange={(e) => {
+                          const num = parseFloat(e.target.value);
+                          const unit = deliveryUnits[line.id] || "days";
+                          updateLine(line.id, "deliveryTime", isNaN(num) ? "" : formatDeliveryTime(num, unit));
+                        }}
+                        placeholder="0"
+                        className="w-24 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] px-3.5 h-[56px] text-[16px] text-[var(--color-ink)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-colors"
+                      />
+                      <select
+                        value={deliveryUnits[line.id] || "days"}
+                        onChange={(e) => {
+                          const unit = e.target.value as "days" | "weeks";
+                          setDeliveryUnits((prev) => ({ ...prev, [line.id]: unit }));
+                          const num = parseFloat(line.deliveryTime || "0") || 0;
+                          if (num > 0) updateLine(line.id, "deliveryTime", formatDeliveryTime(num, unit));
+                        }}
+                        className="w-24 rounded-lg border border-[var(--color-hairline)] bg-[var(--color-canvas)] px-3.5 h-[56px] text-[16px] text-[var(--color-ink)] focus:border-[var(--color-ink)] focus:border-2 focus:outline-none transition-colors"
+                      >
+                        <option value="days">DAYS</option>
+                        <option value="weeks">WEEKS</option>
+                      </select>
+                    </div>
+                  </div>
                 )}
               </div>
               <button

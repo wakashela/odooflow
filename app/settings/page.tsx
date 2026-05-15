@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { useSettingsStore } from "@/store/settingsStore";
+import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/Button";
 import {
   fetchAllSettings,
   writeCompanySettings,
@@ -268,7 +270,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-muted)]" />
+        <Spinner size="md" />
       </div>
     );
   }
@@ -633,7 +635,7 @@ function PrintSettingsTab({
           <div>
             <label className="text-sm font-medium text-[var(--color-ink)]">Show Delivery Time in Line Items</label>
             <p className="text-xs text-[var(--color-muted-soft)] mt-0.5">
-              Display delivery time column in PDF line items table
+              Display delivery time column in line items tables and PDF documents
             </p>
           </div>
           <button
@@ -651,35 +653,12 @@ function PrintSettingsTab({
           </button>
         </div>
 
-        {form.showDeliveryTimeInLine && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[var(--color-ink)]">Delivery Time Unit</label>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="deliveryTimeUnit"
-                  checked={form.deliveryTimeUnit === "days"}
-                  onChange={() => onChange({ ...form, deliveryTimeUnit: "days" })}
-                  className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm text-[var(--color-ink)]">Days</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="deliveryTimeUnit"
-                  checked={form.deliveryTimeUnit === "weeks"}
-                  onChange={() => onChange({ ...form, deliveryTimeUnit: "weeks" })}
-                  className="text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
-                />
-                <span className="text-sm text-[var(--color-ink)]">Weeks</span>
-              </label>
-            </div>
-          </div>
-        )}
+        <div className="mt-8 flex justify-end">
+          <Button onClick={onSave} disabled={saving}>
+            {saving ? "Saving..." : "Save Print Settings"}
+          </Button>
+        </div>
       </div>
-      <SaveButton onClick={onSave} saving={saving} />
     </div>
   );
 }

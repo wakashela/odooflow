@@ -37,6 +37,7 @@ interface QuotationPDFProps {
   company?: CompanySettings | null;
   banks?: BankDetail[];
   pdfColors?: PdfColorSettings;
+  showDeliveryTimeInLine?: boolean;
 }
 
 export function QuotationPDFPage({
@@ -59,6 +60,7 @@ export function QuotationPDFPage({
   company,
   banks,
   pdfColors,
+  showDeliveryTimeInLine = false,
 }: QuotationPDFProps) {
   const subtotal = lines.reduce((s, l) => s + l.subtotal, 0);
   const discount = lines.reduce((s, l) => s + (l.quantity * l.unitPrice - l.subtotal), 0);
@@ -144,10 +146,12 @@ export function QuotationPDFPage({
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colNum]}>S/N</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colDesc]}>Description</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPart]}>Part No.</Text>
-            <View style={[pdfStyles.tableHeaderCell, pdfStyles.colDelivery]}>
-              <Text style={{ textAlign: "center" }}>DELIVERY</Text>
-              <Text style={{ textAlign: "center" }}>TIME</Text>
-            </View>
+            {showDeliveryTimeInLine && (
+              <View style={[pdfStyles.tableHeaderCell, pdfStyles.colDelivery]}>
+                <Text style={{ textAlign: "center" }}>DELIVERY</Text>
+                <Text style={{ textAlign: "center" }}>TIME</Text>
+              </View>
+            )}
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colQty]}>Qty</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colPrice]}>Unit price</Text>
             <Text style={[pdfStyles.tableHeaderCell, pdfStyles.colAmount]}>Amount (TZS)</Text>
@@ -163,7 +167,9 @@ export function QuotationPDFPage({
               <Text style={[pdfStyles.tableCell, pdfStyles.colNum]}>{idx + 1}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colDesc]}>{line.description}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPart]}>{line.partNumber || ""}</Text>
-              <Text style={[pdfStyles.tableCell, pdfStyles.colDelivery]}>{line.deliveryTime || ""}</Text>
+              {showDeliveryTimeInLine && (
+                <Text style={[pdfStyles.tableCell, pdfStyles.colDelivery]}>{line.deliveryTime || ""}</Text>
+              )}
               <Text style={[pdfStyles.tableCell, pdfStyles.colQty]}>{line.quantity}</Text>
               <Text style={[pdfStyles.tableCell, pdfStyles.colPrice]}>
                 {formatCurrency(line.unitPrice)}
