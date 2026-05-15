@@ -23,7 +23,7 @@ import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { SaleOrder, SaleOrderLine } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
 import type { ProductProduct } from "@/types/odoo";
-import { ArrowLeft, CheckCircle, Printer, FileText, ExternalLink, ShoppingCart } from "lucide-react";
+import { ArrowLeft, CheckCircle, Printer, FileText, ExternalLink, ShoppingCart, Save } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { PageLoader } from "@/components/ui/PageLoader";
@@ -40,6 +40,7 @@ export default function QuotationDetailPage() {
   const [products, setProducts] = useState<ProductProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [creatingInvoice, setCreatingInvoice] = useState(false);
   const [creatingPurchaseOrder, setCreatingPurchaseOrder] = useState(false);
   const [showAddLine, setShowAddLine] = useState(false);
@@ -131,6 +132,17 @@ export default function QuotationDetailPage() {
       deliveryTime: l.x_delivery_time || "",
     };
   });
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      await loadOrder();
+    } catch (err) {
+      alert(`Failed to reload: ${(err as Error).message}`);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleConfirm() {
     if (!confirm("Confirm this quotation?\n\nThis action will lock line items and move the workflow to proforma so purchase order processing can begin.")) return;
@@ -283,10 +295,16 @@ export default function QuotationDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           {isDraft && (
-            <Button onClick={handleConfirm} disabled={confirming}>
-              <CheckCircle size={16} />
-              {confirming ? "Confirming..." : "Confirm Order"}
-            </Button>
+            <>
+              <Button onClick={handleSave} disabled={saving} variant="outline">
+                <Save size={16} />
+                {saving ? "Saving..." : "Save"}
+              </Button>
+              <Button onClick={handleConfirm} disabled={confirming}>
+                <CheckCircle size={16} />
+                {confirming ? "Confirming..." : "Confirm Order"}
+              </Button>
+            </>
           )}
           {isConfirmed && !hasPurchaseOrders && (
             <Button onClick={handleCreatePurchaseOrder} disabled={creatingPurchaseOrder}>

@@ -69,7 +69,7 @@ export async function GET(
         "search_read",
         [[["move_id", "=", invoiceId], ["display_type", "=", "product"]]],
         {
-          fields: ["id", "product_id", "name", "quantity", "price_unit", "price_subtotal", "discount"],
+          fields: ["id", "product_id", "name", "quantity", "price_unit", "price_subtotal", "discount", "x_delivery_time"],
           order: "id",
         }
       ),
@@ -116,6 +116,7 @@ export async function GET(
       discount: (l.discount as number) || 0,
       subtotal: (l.price_subtotal as number) || 0,
       partNumber: undefined as string | undefined,
+      deliveryTime: (l.x_delivery_time as string) || undefined,
     }));
 
     // Fetch part numbers (default_code) for products in lines
