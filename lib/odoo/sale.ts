@@ -10,7 +10,7 @@ const SALE_FIELDS = [
 
 const LINE_FIELDS = [
   "id", "order_id", "product_id", "name", "product_uom_qty",
-  "price_unit", "price_subtotal", "discount", "tax_id",
+  "price_unit", "price_subtotal", "discount", "tax_id", "x_delivery_time",
 ];
 
 export async function fetchQuotations(limit = 50, offset = 0): Promise<SaleOrder[]> {

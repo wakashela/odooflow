@@ -35,6 +35,7 @@ export interface SaleOrderLine {
   price_subtotal: number;
   discount: number;
   tax_id: OdooRelation[];
+  x_delivery_time?: string;
 }
 
 export interface AccountMove {
@@ -65,6 +66,7 @@ export interface AccountMoveLine {
   price_subtotal: number;
   discount: number;
   tax_ids: OdooRelation[];
+  x_delivery_time?: string;
 }
 
 export interface StockPicking {

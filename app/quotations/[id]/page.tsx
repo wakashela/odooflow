@@ -128,6 +128,7 @@ export default function QuotationDetailPage() {
       unitPrice: l.price_unit,
       discount: l.discount,
       subtotal: l.price_subtotal,
+      deliveryTime: l.x_delivery_time || "",
     };
   });
 
@@ -184,6 +185,7 @@ export default function QuotationDetailPage() {
     else if (field === "quantity") update.product_uom_qty = Number(value);
     else if (field === "unitPrice") update.price_unit = Number(value);
     else if (field === "discount") update.discount = Number(value);
+    else if (field === "deliveryTime") update.x_delivery_time = String(value);
 
     setRawLines(
       rawLines.map((l) => {

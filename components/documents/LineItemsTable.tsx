@@ -43,6 +43,9 @@ export function LineItemsTable({
                 Disc %
               </th>
             )}
+            <th className="px-4 py-3 text-center text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-28">
+              Delivery Time
+            </th>
             <th className="px-4 py-3 text-right text-xs font-semibold font-[family-name:var(--font-heading)] uppercase tracking-wider w-36">
               Amount
             </th>
@@ -117,6 +120,18 @@ export function LineItemsTable({
                   />
                 </td>
               )}
+              <td className="px-4 py-3 text-center text-[var(--color-text-muted)] text-xs">
+                {editable ? (
+                  <input
+                    type="text"
+                    value={line.deliveryTime || ""}
+                    onChange={(e) => onLineChange?.(line.id, "deliveryTime", e.target.value)}
+                    className="w-24 text-center rounded border border-[var(--color-border)] px-2 py-1 text-xs focus:border-[var(--color-primary)] focus:outline-none"
+                  />
+                ) : (
+                  line.deliveryTime || "-"
+                )}
+              </td>
               <td className="px-4 py-3 text-right font-[family-name:var(--font-heading)] font-medium">
                 {formatCurrency(line.subtotal)}
               </td>
@@ -135,7 +150,7 @@ export function LineItemsTable({
           ))}
           {lines.length === 0 && (
             <tr>
-              <td colSpan={editable ? 8 : 6} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
+              <td colSpan={editable ? 9 : 7} className="px-4 py-8 text-center text-[var(--color-text-muted)]">
                 No line items
               </td>
             </tr>
