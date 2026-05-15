@@ -1,7 +1,6 @@
-const TZS_FORMATTER = new Intl.NumberFormat("en-TZ", {
+const TZS_FORMATTER = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
-  useGrouping: true,
 });
 
 export function formatCurrency(amount: number): string {
