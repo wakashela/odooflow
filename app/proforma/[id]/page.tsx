@@ -6,7 +6,7 @@ import Link from "next/link";
 import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
 import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { useAuthStore } from "@/store/authStore";
-import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
+import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { fetchCustomerById } from "@/lib/odoo/partner";
@@ -19,7 +19,7 @@ import { BankDetails } from "@/components/documents/BankDetails";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { SaleOrder, SaleOrderLine } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
-import type { BankDetail, CompanySettings } from "@/types/settings";
+import type { BankDetail, CompanySettings, PrintSettings } from "@/types/settings";
 import { ArrowLeft, Printer, ExternalLink } from "lucide-react";
 
 export default function ProformaDetailPage() {
@@ -33,6 +33,11 @@ export default function ProformaDetailPage() {
   const [partnerAddress, setPartnerAddress] = useState("");
   const [banks, setBanks] = useState<BankDetail[]>([]);
   const [company, setCompany] = useState<CompanySettings | null>(null);
+  const [printSettings, setPrintSettings] = useState<PrintSettings>({
+    enableOriginalDuplicate: false,
+    showDeliveryTimeInLine: false,
+    deliveryTimeUnit: "days",
+  });
   const [loading, setLoading] = useState(true);
 
   const loadOrder = useCallback(async () => {
@@ -43,14 +48,16 @@ export default function ProformaDetailPage() {
         fetchSaleOrderLines(id),
         fetchCompanySettings(),
       ]);
-      const [purchaseOrders, partner] = await Promise.all([
+      const [purchaseOrders, partner, printSettingsData, bankData] = await Promise.all([
         fetchPurchaseOrdersByOrigin(so.name),
-        fetchCustomerById(so.partner_id[0])
+        fetchCustomerById(so.partner_id[0]),
+        fetchPrintSettings(),
+        company ? fetchBankDetails(company.partner_id) : Promise.resolve([]),
       ]);
-      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
+      setPrintSettings(printSettingsData);
       setBanks(bankData);
       setCompany(company);
       if (partner) {
@@ -190,7 +197,7 @@ export default function ProformaDetailPage() {
         company={company}
       />
 
-      <LineItemsTable lines={lineItems} />
+      <LineItemsTable lines={lineItems} showDeliveryTime={printSettings.showDeliveryTimeInLine} deliveryTimeUnit={printSettings.deliveryTimeUnit} />
 
       <TotalsBlock
         amountUntaxed={computedSubtotal}

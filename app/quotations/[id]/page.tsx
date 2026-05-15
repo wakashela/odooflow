@@ -8,9 +8,9 @@ import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
 import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
 import { fetchProducts, fetchCustomerById, searchPartners } from "@/lib/odoo/partner";
 import { useAuthStore } from "@/store/authStore";
-import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
+import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import type { ResPartner } from "@/types/odoo";
-import type { BankDetail, CompanySettings } from "@/types/settings";
+import type { BankDetail, CompanySettings, PrintSettings } from "@/types/settings";
 import { computeLineAmount } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -49,6 +49,11 @@ export default function QuotationDetailPage() {
   const [partnerAddress, setPartnerAddress] = useState("");
   const [banks, setBanks] = useState<BankDetail[]>([]);
   const [company, setCompany] = useState<CompanySettings | null>(null);
+  const [printSettings, setPrintSettings] = useState<PrintSettings>({
+    enableOriginalDuplicate: false,
+    showDeliveryTimeInLine: false,
+    deliveryTimeUnit: "days",
+  });
 
   const [showCustomerEditModal, setShowCustomerEditModal] = useState(false);
   const [customerQuery, setCustomerQuery] = useState("");
@@ -70,7 +75,12 @@ export default function QuotationDetailPage() {
         fetchPurchaseOrdersByOrigin(so.name),
         fetchCustomerById(so.partner_id[0])
       ]);
-      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
+      const [printSettingsData, bankData] = await Promise.all([
+        fetchPrintSettings(),
+        company ? fetchBankDetails(company.partner_id) : Promise.resolve([]),
+      ]);
+      setPrintSettings(printSettingsData);
+      setBanks(bankData);
       setOrder(so);
       setRawLines(lines);
       setPurchaseOrderIds(purchaseOrders.map((po) => po.id));
@@ -385,6 +395,8 @@ export default function QuotationDetailPage() {
       <LineItemsTable
         lines={lineItems}
         editable={isDraft}
+        showDeliveryTime={printSettings.showDeliveryTimeInLine}
+        deliveryTimeUnit={printSettings.deliveryTimeUnit}
         onLineChange={handleLineChange}
         onLineDelete={handleLineDelete}
         onLineAdd={() => setShowAddLine(true)}

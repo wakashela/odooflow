@@ -8,7 +8,7 @@ import { odooCall } from "@/lib/odoo/client";
 import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/lib/utils";
 import { fetchCustomerById } from "@/lib/odoo/partner";
-import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
+import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -20,7 +20,7 @@ import { BankDetails } from "@/components/documents/BankDetails";
 import { WorkflowBar } from "@/components/layout/WorkflowBar";
 import type { AccountMove, AccountMoveLine, SaleOrder } from "@/types/odoo";
 import type { LineItem, DocumentType } from "@/types/documents";
-import type { BankDetail, CompanySettings } from "@/types/settings";
+import type { BankDetail, CompanySettings, PrintSettings } from "@/types/settings";
 import { ArrowLeft, CheckCircle, Printer, ExternalLink } from "lucide-react";
 
 export default function InvoiceDetailPage() {
@@ -36,6 +36,11 @@ export default function InvoiceDetailPage() {
   const [partnerAddress, setPartnerAddress] = useState("");
   const [banks, setBanks] = useState<BankDetail[]>([]);
   const [company, setCompany] = useState<CompanySettings | null>(null);
+  const [printSettings, setPrintSettings] = useState<PrintSettings>({
+    enableOriginalDuplicate: false,
+    showDeliveryTimeInLine: false,
+    deliveryTimeUnit: "days",
+  });
 
   const isDraft = invoice?.state === "draft";
 
@@ -55,7 +60,11 @@ export default function InvoiceDetailPage() {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
 
-      const bankData = company ? await fetchBankDetails(company.partner_id) : [];
+      const [printSettingsData, bankData] = await Promise.all([
+        fetchPrintSettings(),
+        company ? fetchBankDetails(company.partner_id) : Promise.resolve([]),
+      ]);
+      setPrintSettings(printSettingsData);
       setBanks(bankData);
       setCompany(company);
 
@@ -202,7 +211,7 @@ export default function InvoiceDetailPage() {
         company={company}
       />
 
-      <LineItemsTable lines={lineItems} />
+      <LineItemsTable lines={lineItems} showDeliveryTime={printSettings.showDeliveryTimeInLine} deliveryTimeUnit={printSettings.deliveryTimeUnit} />
 
       <TotalsBlock
         amountUntaxed={invoice.amount_untaxed}
