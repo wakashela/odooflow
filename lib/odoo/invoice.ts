@@ -62,5 +62,45 @@ export async function createInvoicesFromSaleOrder(orderId: number): Promise<numb
   if (!invoiceIds.length) {
     throw new Error("No invoices were created");
   }
+
+  // Copy x_delivery_time from sale order lines to invoice lines
+  const soLines = await odooCall<Record<string, unknown>[]>(
+    "sale.order.line", "search_read",
+    [[["order_id", "=", orderId]]],
+    { fields: ["id", "x_delivery_time", "product_id"] }
+  );
+
+  for (const invId of invoiceIds) {
+    const invLines = await odooCall<Record<string, unknown>[]>(
+      "account.move.line", "search_read",
+      [[["move_id", "=", invId]]],
+      { fields: ["id", "product_id", "sale_line_ids"] }
+    );
+
+    for (const soLine of soLines) {
+      const dt = soLine.x_delivery_time as string | undefined;
+      if (!dt) continue;
+      const soProductId = (soLine.product_id as [number, string])?.[0];
+
+      // Match invoice line by sale_line_ids or by product
+      const invLine = invLines.find((il) => {
+        const saleLinks = il.sale_line_ids as [number, string][] | undefined;
+        if (saleLinks?.some(([sid]) => sid === soLine.id)) return true;
+        if (soProductId) {
+          const ilProductId = (il.product_id as [number, string])?.[0];
+          if (ilProductId === soProductId) return true;
+        }
+        return false;
+      });
+
+      if (invLine) {
+        await odooCall<boolean>("account.move.line", "write", [
+          [invLine.id as number],
+          { x_delivery_time: dt },
+        ]);
+      }
+    }
+  }
+
   return invoiceIds;
 }
