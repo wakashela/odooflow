@@ -9,6 +9,7 @@ export function getBackend(): DataBackend {
   const type = process.env.BACKEND || "odoo";
 
   if (type === "sqlite") {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { SqliteBackend } = require("./sqlite/backend");
     cached = new SqliteBackend();
   } else {
