@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
-import { fetchDeliveries } from "@/lib/odoo/stock";
+import { getBackend } from "@/lib/data";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -28,9 +28,10 @@ export default function PackingListsPage() {
   const PAGE_SIZE = 10;
 
   async function loadPickings() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchDeliveries();
+      const data = await backend.fetchDeliveries();
       setPickings(data);
     } catch (err) {
       console.error("Failed to load deliveries:", err);

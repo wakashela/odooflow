@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchCustomerById, updateCustomer } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { type ResPartner } from "@/types/odoo";
 import { ArrowLeft, Edit2, Phone, Mail, MapPin, Building2, Check, X } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
@@ -72,9 +72,10 @@ export default function CustomerDetailPage() {
   }, [id]);
 
   async function load() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const p = await fetchCustomerById(id);
+      const p = await backend.fetchCustomerById(id);
       setCustomer(p);
       if (p) setEditForm({ email: p.email, phone: p.phone, street: p.street, city: p.city, vat: p.vat, is_company: p.is_company });
     } catch (err) {
@@ -88,7 +89,8 @@ export default function CustomerDetailPage() {
     if (!customer) return;
     setSaving(true);
     try {
-      await updateCustomer(customer.id, { ...editForm, name: customer.name });
+      const backend = getBackend();
+      await backend.updateCustomer(customer.id, { ...editForm, name: customer.name });
       await load();
       setEditing(false);
     } catch (err) {

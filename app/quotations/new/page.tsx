@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createQuotation } from "@/lib/odoo/sale";
-import { fetchCustomers, fetchProducts, searchPartners, createCustomer, createProduct } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { formatCurrency, computeLineAmount } from "@/lib/utils";
 import { formatDeliveryTime } from "@/lib/delivery-time";
 import { useSettingsStore } from "@/store/settingsStore";
@@ -58,7 +57,8 @@ export default function NewQuotationPage() {
   const [deliveryUnits, setDeliveryUnits] = useState<Record<number, "days" | "weeks">>({});
 
   useEffect(() => {
-    Promise.all([fetchCustomers(), fetchProducts()]).then(([custs, prods]) => {
+    const backend = getBackend();
+    Promise.all([backend.fetchCustomers(), backend.fetchProducts()]).then(([custs, prods]) => {
       setCustomers(custs);
       setProducts(prods);
     });
@@ -74,7 +74,8 @@ export default function NewQuotationPage() {
       }
       setCustomerSearching(true);
       try {
-        const results = await searchPartners(customerQuery, 20);
+        const backend = getBackend();
+        const results = await backend.searchPartners(customerQuery, 20);
         if (!active) return;
         setCustomerSuggestions(results);
       } catch (err) {
@@ -161,7 +162,8 @@ export default function NewQuotationPage() {
   async function handleCreateCustomerForm() {
     try {
       setSavingCustomer(true);
-      const newId = await createCustomer({ 
+      const backend = getBackend();
+      const newId = await backend.createCustomer({ 
         name: customerForm.name,
         email: customerForm.email,
         phone: customerForm.phone,
@@ -176,7 +178,7 @@ export default function NewQuotationPage() {
       setPartnerId(customerId);
       setCustomerQuery(customerForm.name);
       setShowCustomerModal(false);
-      const custs = await fetchCustomers();
+      const custs = await backend.fetchCustomers();
       setCustomers(custs);
     } catch (err) {
       alert(`Failed to create customer: ${(err as Error).message}`);
@@ -194,7 +196,8 @@ export default function NewQuotationPage() {
     try {
       setSavingProduct(true);
       const lineId = productModalLineId;
-      const rawId = await createProduct({ 
+      const backend = getBackend();
+      const rawId = await backend.createProduct({ 
         name: productForm.name,
         default_code: productForm.default_code,
         list_price: productForm.list_price,
@@ -228,7 +231,7 @@ export default function NewQuotationPage() {
       setProductQueries((prev) => ({ ...prev, [lineId]: "" }));
 
       // Refresh product list in background for future searches
-      fetchProducts().then((prods) => setProducts(prods));
+      backend.fetchProducts().then((prods) => setProducts(prods));
 
       setShowProductModal(false);
       setProductModalLineId(null);
@@ -251,7 +254,8 @@ export default function NewQuotationPage() {
 
     setSaving(true);
     try {
-      const orderId = await createQuotation({
+      const backend = getBackend();
+      const orderId = await backend.createQuotation({
         partner_id: Array.isArray(partnerId) ? partnerId[0] : partnerId,
         validity_date: validityDate || undefined,
         client_order_ref: clientOrderRef || undefined,

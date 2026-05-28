@@ -3,11 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchDeliveryById, fetchStockMoves, validateDelivery, setMoveDoneQuantity, findInvoiceByOrigin } from "@/lib/odoo/stock";
-import { odooCall } from "@/lib/odoo/client";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
 import { formatDateTime } from "@/lib/utils";
-import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -42,11 +40,12 @@ export default function DeliveryDetailPage() {
     picking?.state === "draft";
 
   const loadPicking = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [p, m] = await Promise.all([
-        fetchDeliveryById(id),
-        fetchStockMoves(id),
+        backend.fetchDeliveryById(id),
+        backend.fetchStockMoves(id),
       ]);
       setPicking(p);
       setMoves(m);
@@ -54,7 +53,7 @@ export default function DeliveryDetailPage() {
 
       if (p.partner_id?.[0]) {
         try {
-          const customerData = await fetchCustomerById(p.partner_id[0]);
+          const customerData = await backend.fetchCustomerById(p.partner_id[0]);
           setCustomer(customerData);
         } catch (err) {
           console.error("Failed to fetch customer:", err);
@@ -63,10 +62,10 @@ export default function DeliveryDetailPage() {
 
       if (p.origin) {
         try {
-          const sos = await odooCall<SaleOrder[]>("sale.order", "search_read", [[["name", "=", p.origin]]], {
+          const sos = await backend.call("sale.order", "search_read", [[["name", "=", p.origin]]], {
             fields: ["id"],
             limit: 1,
-          });
+          }) as { id: number }[];
           if (sos.length) setOriginSoId(sos[0].id);
         } catch {}
       }
@@ -74,7 +73,7 @@ export default function DeliveryDetailPage() {
       // Check for invoice
       if (p.state === "done" && p.origin) {
         try {
-          const inv = await findInvoiceByOrigin(p.origin);
+          const inv = await backend.findInvoiceByOrigin(p.origin);
           if (inv) setInvoice(inv);
         } catch {}
       }
@@ -99,12 +98,13 @@ export default function DeliveryDetailPage() {
   }
 
   async function handleSaveQuantities() {
+    const backend = getBackend();
     setSavingQuantities(true);
     try {
       for (const move of moves) {
         const newQty = doneQtyEdits[move.id];
         if (newQty !== undefined && newQty !== move.quantity_done) {
-          await setMoveDoneQuantity(move.id, newQty);
+          await backend.setMoveDoneQuantity(move.id, newQty);
         }
       }
       await loadPicking();
@@ -117,17 +117,17 @@ export default function DeliveryDetailPage() {
 
   async function handleValidate() {
     if (!confirm("Validate this delivery? This will mark it as done.")) return;
+    const backend = getBackend();
     setValidating(true);
     try {
-      // Save any unsaved quantities first
       for (const move of moves) {
         const newQty = doneQtyEdits[move.id];
         if (newQty !== undefined && newQty !== move.quantity_done) {
-          await setMoveDoneQuantity(move.id, newQty);
+          await backend.setMoveDoneQuantity(move.id, newQty);
         }
       }
 
-      await validateDelivery(id);
+      await backend.validateDelivery(id);
       await loadPicking();
     } catch (err) {
       alert(`Failed to validate: ${(err as Error).message}`);

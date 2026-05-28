@@ -3,10 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchDeliveryById, fetchStockMoves } from "@/lib/odoo/stock";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
 import { formatDateTime } from "@/lib/utils";
-import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -25,18 +24,19 @@ export default function PackingListDetailPage() {
   const [customer, setCustomer] = useState<ResPartner | null>(null);
 
   const loadPacking = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [p, m] = await Promise.all([
-        fetchDeliveryById(id),
-        fetchStockMoves(id),
+        backend.fetchDeliveryById(id),
+        backend.fetchStockMoves(id),
       ]);
       setPicking(p);
       setMoves(m);
 
       if (p.partner_id?.[0]) {
         try {
-          const customerData = await fetchCustomerById(p.partner_id[0]);
+          const customerData = await backend.fetchCustomerById(p.partner_id[0]);
           setCustomer(customerData);
         } catch (err) {
           console.error("Failed to fetch customer:", err);

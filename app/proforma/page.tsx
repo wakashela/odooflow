@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchQuotations } from "@/lib/odoo/sale";
+import { getBackend } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -25,9 +25,10 @@ export default function ProformaPage() {
   const PAGE_SIZE = 10;
 
   const loadOrders = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchQuotations();
+      const data = await backend.fetchQuotations();
       setOrders(data.filter((o) => o.state === "sale"));
     } catch (err) {
       console.error("Failed to load proformas:", err);

@@ -3,10 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchPurchaseOrderById, fetchPurchaseOrderLines, confirmPurchaseOrder } from "@/lib/odoo/purchase";
-import { odooCall } from "@/lib/odoo/client";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
-import { fetchCustomerById } from "@/lib/odoo/partner";
 import { fetchCompanySettings, fetchBankDetails } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -39,17 +37,18 @@ export default function PurchaseOrderDetailPage() {
   const isDraft = order?.state === "draft";
 
   const loadOrder = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [po, lines, company] = await Promise.all([
-        fetchPurchaseOrderById(id),
-        fetchPurchaseOrderLines(id),
+        backend.fetchPurchaseOrderById(id),
+        backend.fetchPurchaseOrderLines(id),
         fetchCompanySettings(),
       ]);
       setOrder(po);
       setRawLines(lines);
 
-      const partner = await fetchCustomerById(po.partner_id[0]);
+      const partner = await backend.fetchCustomerById(po.partner_id[0]);
       if (partner) {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
@@ -60,10 +59,10 @@ export default function PurchaseOrderDetailPage() {
 
       if (po.origin) {
         try {
-          const sos = await odooCall<SaleOrder[]>("sale.order", "search_read", [[["name", "=", po.origin]]], {
+          const sos = await backend.call("sale.order", "search_read", [[["name", "=", po.origin]]], {
             fields: ["id"],
             limit: 1,
-          });
+          }) as { id: number }[];
           if (sos.length) setOriginSoId(sos[0].id);
         } catch {}
       }
@@ -83,7 +82,8 @@ export default function PurchaseOrderDetailPage() {
     if (!confirm("Confirm this purchase order?")) return;
     setConfirming(true);
     try {
-      await confirmPurchaseOrder(id);
+      const backend = getBackend();
+      await backend.confirmPurchaseOrder(id);
       await loadOrder();
     } catch (err) {
       alert(`Failed to confirm: ${(err as Error).message}`);

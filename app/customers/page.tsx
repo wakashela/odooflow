@@ -4,7 +4,7 @@ import { useEffect, useState, useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchCustomers, updateCustomer, createCustomer } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -34,9 +34,10 @@ export default function CustomersPage() {
   }, [session]);
 
   async function loadCustomers() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchCustomers();
+      const data = await backend.fetchCustomers();
       setCustomers(data);
     } catch (err) {
       console.error("Failed to load customers:", err);
@@ -60,7 +61,8 @@ export default function CustomersPage() {
     if (editingId === null || !editName.trim()) return;
     setSavingId(editingId);
     try {
-      await updateCustomer(editingId, {
+      const backend = getBackend();
+      await backend.updateCustomer(editingId, {
         name: editName.trim(),
         email: editEmail.trim() || undefined,
         phone: editPhone.trim() || undefined,
@@ -85,7 +87,8 @@ export default function CustomersPage() {
   async function _handleCreateQuick() {
     try {
       const name = `New Customer ${Date.now()}`;
-      const id = await createCustomer({
+      const backend = getBackend();
+      const id = await backend.createCustomer({
         name,
         is_company: false,
       });

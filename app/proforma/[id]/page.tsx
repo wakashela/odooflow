@@ -3,13 +3,11 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchQuotationById, fetchSaleOrderLines } from "@/lib/odoo/sale";
-import { fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
 import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
-import { fetchCustomerById } from "@/lib/odoo/partner";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DocumentHeader } from "@/components/documents/DocumentHeader";
@@ -41,16 +39,17 @@ export default function ProformaDetailPage() {
   const [loading, setLoading] = useState(true);
 
   const loadOrder = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [so, lines, company] = await Promise.all([
-        fetchQuotationById(id),
-        fetchSaleOrderLines(id),
+        backend.fetchQuotationById(id),
+        backend.fetchSaleOrderLines(id),
         fetchCompanySettings(),
       ]);
       const [purchaseOrders, partner, printSettingsData, bankData] = await Promise.all([
-        fetchPurchaseOrdersByOrigin(so.name),
-        fetchCustomerById(so.partner_id[0]),
+        backend.fetchPurchaseOrdersByOrigin(so.name),
+        backend.fetchCustomerById(so.partner_id[0]),
         fetchPrintSettings(),
         company ? fetchBankDetails(company.partner_id) : Promise.resolve([]),
       ]);

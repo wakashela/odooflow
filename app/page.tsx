@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { Badge } from "@/components/ui/Badge";
-import { odooCall } from "@/lib/odoo/client";
+import { getBackend } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { SaleOrder, AccountMove, PurchaseOrder, StockPicking } from "@/types/odoo";
 import { FileText, Receipt, ShoppingCart, Truck, ArrowRight, Plus, TrendingUp } from "lucide-react";
@@ -40,28 +40,29 @@ export default function DashboardPage() {
     if (!session) return;
 
     async function load() {
+      const backend = getBackend();
       try {
         const [orders, invoices, purchases, deliveries] = await Promise.all([
-          odooCall<SaleOrder[]>("sale.order", "search_read", [[]], {
+          backend.call("sale.order", "search_read", [[]], {
             fields: ["name", "partner_id", "date_order", "amount_total", "state"],
             limit: 5,
             order: "id desc",
-          }),
-          odooCall<AccountMove[]>("account.move", "search_read", [[["move_type", "=", "out_invoice"]]], {
+          }) as Promise<SaleOrder[]>,
+          backend.call("account.move", "search_read", [[["move_type", "=", "out_invoice"]]], {
             fields: ["name", "partner_id", "invoice_date", "amount_total", "state"],
             limit: 5,
             order: "id desc",
-          }),
-          odooCall<PurchaseOrder[]>("purchase.order", "search_read", [[]], {
+          }) as Promise<AccountMove[]>,
+          backend.call("purchase.order", "search_read", [[]], {
             fields: ["name", "partner_id", "date_order", "amount_total", "state"],
             limit: 5,
             order: "id desc",
-          }),
-          odooCall<StockPicking[]>("stock.picking", "search_read", [[["picking_type_code", "=", "outgoing"]]], {
+          }) as Promise<PurchaseOrder[]>,
+          backend.call("stock.picking", "search_read", [[["picking_type_code", "=", "outgoing"]]], {
             fields: ["name", "partner_id", "scheduled_date", "state", "origin"],
             limit: 5,
             order: "id desc",
-          }),
+          }) as Promise<StockPicking[]>,
         ]);
 
         const draftOrders = orders.filter((o) => o.state === "draft");

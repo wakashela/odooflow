@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchQuotations } from "@/lib/odoo/sale";
+import { getBackend } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -24,9 +24,10 @@ export default function QuotationsPage() {
   const PAGE_SIZE = 10;
 
   async function loadOrders() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchQuotations();
+      const data = await backend.fetchQuotations();
       setOrders(data);
     } catch (err) {
       console.error("Failed to load quotations:", err);

@@ -3,11 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchInvoiceById, fetchInvoiceLines, postInvoice } from "@/lib/odoo/invoice";
-import { odooCall } from "@/lib/odoo/client";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/lib/utils";
-import { fetchCustomerById } from "@/lib/odoo/partner";
 import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -45,17 +43,18 @@ export default function InvoiceDetailPage() {
   const isDraft = invoice?.state === "draft";
 
   const loadInvoice = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [inv, lines, company] = await Promise.all([
-        fetchInvoiceById(id),
-        fetchInvoiceLines(id),
+        backend.fetchInvoiceById(id),
+        backend.fetchInvoiceLines(id),
         fetchCompanySettings(),
       ]);
       setInvoice(inv);
       setRawLines(lines);
 
-      const partner = await fetchCustomerById(inv.partner_id[0]);
+      const partner = await backend.fetchCustomerById(inv.partner_id[0]);
       if (partner) {
         setPartnerAddress([partner.street, partner.city].filter(Boolean).join(", "));
       }
@@ -70,10 +69,10 @@ export default function InvoiceDetailPage() {
 
       if (inv.invoice_origin) {
         try {
-          const sos = await odooCall<SaleOrder[]>("sale.order", "search_read", [[["name", "=", inv.invoice_origin]]], {
+          const sos = await backend.call("sale.order", "search_read", [[["name", "=", inv.invoice_origin]]], {
             fields: ["id"],
             limit: 1,
-          });
+          }) as { id: number }[];
           if (sos.length) setOriginSoId(sos[0].id);
         } catch {}
       }
@@ -93,7 +92,8 @@ export default function InvoiceDetailPage() {
     if (!confirm("Post this invoice? This will lock it.")) return;
     setPosting(true);
     try {
-      await postInvoice(id);
+      const backend = getBackend();
+      await backend.postInvoice(id);
       await loadInvoice();
     } catch (err) {
       alert(`Failed to post: ${(err as Error).message}`);

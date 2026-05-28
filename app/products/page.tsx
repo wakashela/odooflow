@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchProducts } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { formatCurrency } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/Button";
@@ -25,9 +25,10 @@ export default function ProductsPage() {
   const PAGE_SIZE = 10;
 
   const loadProducts = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchProducts();
+      const data = await backend.fetchProducts();
       setProducts(data);
     } catch (err) {
       console.error("Failed to load products:", err);

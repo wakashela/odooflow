@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createProduct } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +29,8 @@ export default function NewProductPage() {
 
     setSaving(true);
     try {
-      await createProduct({
+      const backend = getBackend();
+      await backend.createProduct({
         name: name.trim(),
         default_code: defaultCode.trim() || undefined,
         description_sale: description.trim() || undefined,

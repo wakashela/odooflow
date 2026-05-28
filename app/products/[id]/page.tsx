@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { fetchProductById, updateProduct } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { type ProductProduct } from "@/types/odoo";
 import { ArrowLeft, Edit2, Tag, Layers, Check, X, Box } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -93,9 +93,10 @@ export default function ProductDetailPage() {
   }, [id]);
 
   async function load() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const p = await fetchProductById(id);
+      const p = await backend.fetchProductById(id);
       setProduct(p);
       if (p) {
         setEditForm({
@@ -119,7 +120,8 @@ export default function ProductDetailPage() {
     if (!product) return;
     setSaving(true);
     try {
-      await updateProduct(product.id, { ...editForm });
+      const backend = getBackend();
+      await backend.updateProduct(product.id, { ...editForm });
       await load();
       setEditing(false);
     } catch (err) {

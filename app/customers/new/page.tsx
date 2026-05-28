@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createCustomer } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { ArrowLeft } from "lucide-react";
@@ -29,7 +29,8 @@ export default function NewCustomerPage() {
 
     setSaving(true);
     try {
-      await createCustomer({
+      const backend = getBackend();
+      await backend.createCustomer({
         name: name.trim(),
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,

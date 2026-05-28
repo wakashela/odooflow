@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import Link from "next/link";
-import { fetchInvoices } from "@/lib/odoo/invoice";
+import { getBackend } from "@/lib/data";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
@@ -27,9 +27,10 @@ export default function InvoicesPage() {
   const PAGE_SIZE = 10;
 
   async function loadInvoices() {
+    const backend = getBackend();
     try {
       setLoading(true);
-      const data = await fetchInvoices();
+      const data = await backend.fetchInvoices();
       setInvoices(data);
     } catch (err) {
       console.error("Failed to load invoices:", err);

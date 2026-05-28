@@ -3,10 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { fetchQuotationById, fetchSaleOrderLines, confirmQuotation, updateSaleOrderLine, deleteSaleOrderLine, addSaleOrderLine, updateQuotation } from "@/lib/odoo/sale";
-import { createInvoicesFromSaleOrder } from "@/lib/odoo/invoice";
-import { createPurchaseOrderFromSaleOrder, fetchPurchaseOrdersByOrigin } from "@/lib/odoo/purchase";
-import { fetchProducts, fetchCustomerById, searchPartners } from "@/lib/odoo/partner";
+import { getBackend } from "@/lib/data";
 import { useAuthStore } from "@/store/authStore";
 import { fetchCompanySettings, fetchBankDetails, fetchPrintSettings } from "@/lib/odoo/settings";
 import type { ResPartner } from "@/types/odoo";
@@ -64,16 +61,17 @@ export default function QuotationDetailPage() {
   const isConfirmed = order?.state === "sale";
 
   const loadOrder = useCallback(async () => {
+    const backend = getBackend();
     try {
       setLoading(true);
       const [so, lines, company] = await Promise.all([
-        fetchQuotationById(id),
-        fetchSaleOrderLines(id),
+        backend.fetchQuotationById(id),
+        backend.fetchSaleOrderLines(id),
         fetchCompanySettings(),
       ]);
       const [purchaseOrders, partner] = await Promise.all([
-        fetchPurchaseOrdersByOrigin(so.name),
-        fetchCustomerById(so.partner_id[0])
+        backend.fetchPurchaseOrdersByOrigin(so.name),
+        backend.fetchCustomerById(so.partner_id[0])
       ]);
       const [printSettingsData, bankData] = await Promise.all([
         fetchPrintSettings(),
@@ -99,7 +97,8 @@ export default function QuotationDetailPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (session) loadOrder();
-    fetchProducts().then(setProducts);
+    const backend = getBackend();
+    backend.fetchProducts().then(setProducts);
   }, [session, loadOrder]);
 
   useEffect(() => {
@@ -111,7 +110,8 @@ export default function QuotationDetailPage() {
       }
       setCustomerSearching(true);
       try {
-        const results = await searchPartners(customerQuery, 20);
+        const backend = getBackend();
+        const results = await backend.searchPartners(customerQuery, 20);
         if (!active) return;
         setCustomerSuggestions(results);
       } catch (err) {
@@ -158,7 +158,8 @@ export default function QuotationDetailPage() {
     if (!confirm("Confirm this quotation?\n\nThis action will lock line items and move the workflow to proforma so purchase order processing can begin.")) return;
     setConfirming(true);
     try {
-      await confirmQuotation(id);
+      const backend = getBackend();
+      await backend.confirmQuotation(id);
       await loadOrder();
     } catch (err) {
       alert(`Failed to confirm: ${(err as Error).message}`);
@@ -171,7 +172,8 @@ export default function QuotationDetailPage() {
     if (!confirm("Create invoice from this order?")) return;
     setCreatingInvoice(true);
     try {
-      const invoiceIds = await createInvoicesFromSaleOrder(id);
+      const backend = getBackend();
+      const invoiceIds = await backend.createInvoicesFromSaleOrder(id);
       if (invoiceIds.length > 0) {
         router.push(`/invoices/${invoiceIds[0]}`);
       } else {
@@ -188,7 +190,8 @@ export default function QuotationDetailPage() {
     if (!confirm("Create a purchase order from this confirmed order?")) return;
     setCreatingPurchaseOrder(true);
     try {
-      const purchaseOrderId = await createPurchaseOrderFromSaleOrder(id);
+      const backend = getBackend();
+      const purchaseOrderId = await backend.createPurchaseOrderFromSaleOrder(id);
       await loadOrder();
       router.push(`/purchase-orders/${purchaseOrderId}`);
     } catch (err) {
@@ -223,7 +226,8 @@ export default function QuotationDetailPage() {
     );
 
     try {
-      await updateSaleOrderLine(lineId, update);
+      const backend = getBackend();
+      await backend.updateSaleOrderLine(lineId, update);
     } catch (err) {
       alert(`Failed to update line: ${(err as Error).message}`);
       await loadOrder();
@@ -233,7 +237,8 @@ export default function QuotationDetailPage() {
   async function handleLineDelete(lineId: number) {
     if (!confirm("Delete this line item?")) return;
     try {
-      await deleteSaleOrderLine(lineId);
+      const backend = getBackend();
+      await backend.deleteSaleOrderLine(lineId);
       await loadOrder();
     } catch (err) {
       alert(`Failed to delete line: ${(err as Error).message}`);
@@ -245,7 +250,8 @@ export default function QuotationDetailPage() {
     try {
       const product = products.find((p) => p.id === newProduct);
       if (!product) return;
-      await addSaleOrderLine(id, {
+      const backend = getBackend();
+      await backend.addSaleOrderLine(id, {
         product_id: product.id,
         name: `${product.default_code ? product.default_code + " - " : ""}${product.name}`,
         product_uom_qty: newQty,
@@ -472,7 +478,8 @@ export default function QuotationDetailPage() {
                   key={c.id}
                   onClick={async () => {
                     try {
-                      await updateQuotation(id, { partner_id: c.id as unknown as [number, string] });
+                      const backend = getBackend();
+                      await backend.updateQuotation(id, { partner_id: c.id as unknown as [number, string] });
                       setShowCustomerEditModal(false);
                       setCustomerQuery("");
                       await loadOrder();
