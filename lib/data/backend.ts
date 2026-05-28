@@ -9,10 +9,11 @@ export function getBackend(): DataBackend {
   const type = process.env.BACKEND || "odoo";
 
   if (type === "sqlite") {
-    throw new Error("SqliteBackend not yet implemented");
+    const { SqliteBackend } = require("./sqlite/backend");
+    cached = new SqliteBackend();
   } else {
     cached = new OdooBackend();
   }
 
-  return cached;
+  return cached!;
 }

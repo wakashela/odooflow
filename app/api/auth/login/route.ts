@@ -1,20 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBackend } from "@/lib/data/backend";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
+const BACKEND = process.env.BACKEND || "odoo";
 
 export async function POST(req: NextRequest) {
   const { login, password, db } = await req.json();
   const database = db || ODOO_DB;
 
-  const payload = {
-    jsonrpc: "2.0",
-    method: "call",
-    id: Date.now(),
-    params: { db: database, login, password },
-  };
-
   try {
+    if (BACKEND === "sqlite") {
+      const backend = getBackend();
+      const session = await backend.authenticate(login, password);
+      const token = (session as unknown as Record<string, unknown>)._token as string;
+
+      const response = NextResponse.json({ session });
+      response.cookies.set("odoo_session_id", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      return response;
+    }
+
+    const payload = {
+      jsonrpc: "2.0",
+      method: "call",
+      id: Date.now(),
+      params: { db: database, login, password },
+    };
+
     const odooRes = await fetch(`${ODOO_URL}/web/session/authenticate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

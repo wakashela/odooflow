@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBackend } from "@/lib/data/backend";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
+const BACKEND = process.env.BACKEND || "odoo";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
+
+  if (BACKEND === "sqlite") {
+    try {
+      const backend = getBackend();
+      const result = await backend.call(body.model, body.method, body.args, body.kwargs || {});
+      return NextResponse.json({ result });
+    } catch (err) {
+      return NextResponse.json(
+        { error: { message: (err as Error).message, code: 500 } },
+        { status: 500 }
+      );
+    }
+  }
+
   const sessionId = req.cookies.get("odoo_session_id")?.value;
 
   if (!sessionId) {
