@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBackend } from "@/lib/data/backend";
+import { getServerBackend } from "@/lib/data/server-backend";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 
   if (BACKEND === "sqlite") {
     try {
-      const backend = getBackend();
+      const backend = await getServerBackend();
       const result = await backend.call(body.model, body.method, body.args, body.kwargs || {});
       return NextResponse.json({ result });
     } catch (err) {

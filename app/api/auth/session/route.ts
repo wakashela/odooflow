@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getBackend } from "@/lib/data/backend";
+import { getServerBackend } from "@/lib/data/server-backend";
 
 const ODOO_URL = process.env.ODOO_URL!;
 const ODOO_DB = process.env.ODOO_DB!;
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   try {
     if (BACKEND === "sqlite") {
-      const backend = getBackend();
+      const backend = await getServerBackend();
       const session = await backend.getSessionInfo(sessionId);
       if (!session) {
         return NextResponse.json({ session: null }, { status: 401 });
