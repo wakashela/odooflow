@@ -12,6 +12,7 @@ export function getServerBackend(): Promise<DataBackend> {
     const { SqliteBackend } = require("./sqlite/backend");
     cachedPromise = Promise.resolve(new SqliteBackend());
   } else {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { OdooBackend } = require("./odoo/backend");
     cachedPromise = Promise.resolve(new OdooBackend());
   }
